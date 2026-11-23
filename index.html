@@ -491,7 +491,7 @@ V.rules=()=>`<h1>Settings</h1><p class="sub">Sync between your phones, bank rule
   <label class="f">Restore: paste a backup here, or drop the .json file on the Import page<textarea id="paste" placeholder='{"v":1,...}'></textarea></label><p style="margin-bottom:0"><button data-a="restore">Restore from pasted backup</button></p></div></div></div>`;
 
 /* ---------- Google Drive sync ---------- */
-const GOOGLE_CLIENT_ID=''; // optional: paste your OAuth client ID here so phones don't need to enter it
+const GOOGLE_CLIENT_ID='1062303601314-ne0elm8g4dpldlg07dc9lajr74lo0ihu.apps.googleusercontent.com'; // optional: paste your OAuth client ID here so phones don't need to enter it
 const SCOPE='https://www.googleapis.com/auth/drive.file',FNAME='tally-data.json',D='https://www.googleapis.com/drive/v3',UP='https://www.googleapis.com/upload/drive/v3';
 const SK='tally-sync';let SY={};try{SY=JSON.parse(localStorage.getItem(SK)||'{}')||{}}catch(e){}
 const saveSY=()=>{try{localStorage.setItem(SK,JSON.stringify(SY))}catch(e){}};
