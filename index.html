@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0e0f12"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Tally">
+<title>Tally family budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: confident phone-banking app, quick to read, a little swagger
+   IDEA: a neobank home screen - balance card, spend ring, stacked rounded cards
+   PICTURE: coral hero card with a huge "left to spend" figure and a budget ring
+   COLOUR and TYPE: charcoal night ground, coral accent, mint for money in; Plus Jakarta Sans with heavy numerals
+   LAYOUT: sidebar nav on desktop, bottom tab bar on phones, card grid */
+:root{color-scheme:light dark;--bg:light-dark(#f2f2f5,#0e0f12);--card:light-dark(#fff,#191b20);--card2:light-dark(#f0f0f3,#23262d);--ink:light-dark(#121316,#f4f4f6);--mute:light-dark(#686c75,#9b9fa9);--rule:light-dark(#e7e7eb,#2a2d35);--acc:#ff6a4d;--onacc:#1d0c07;--accsoft:light-dark(#ffe7e0,#3a1e18);--in:light-dark(#0c9a63,#4fe0a0);--insoft:light-dark(#dcf5ea,#14302a);--red:light-dark(#d4281c,#ff7b70);--rsoft:light-dark(#fde6e3,#3b1a18);--spend:light-dark(#c8cbd2,#3c4049);--r:20px}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Plus Jakarta Sans",system-ui,sans-serif;overflow-x:clip;display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+a{color:var(--acc)}
+.side{position:sticky;top:0;height:100vh;padding:26px 14px;background:var(--card);border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:26px}
+.logo{display:flex;align-items:center;gap:10px;padding:0 10px;font-weight:800;font-size:22px;letter-spacing:-.02em}
+.logo i{width:34px;height:34px;border-radius:11px;background:var(--acc);color:var(--onacc);display:grid;place-items:center;font-style:normal;font-size:19px}
+.side .safe{margin-top:auto;font-size:13px;color:var(--mute);padding:0 10px;display:flex;gap:8px}
+.side .safe svg{flex:none;margin-top:2px}
+nav{display:flex;flex-direction:column;gap:4px}
+nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--mute);text-decoration:none;font-weight:600;min-height:44px}
+nav a svg{width:21px;height:21px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav a:hover{background:var(--card2);color:var(--ink)}
+nav a.on{background:var(--accsoft);color:var(--ink)}nav a.on svg{stroke:var(--acc)}
+main{max-width:1180px;width:100%;margin:0 auto;padding:calc(clamp(20px,3vw,40px) + env(safe-area-inset-top)) clamp(16px,3vw,40px) 90px}
+.syncpill{margin:0 10px}.syncpill[hidden]{display:none}.mtop .syncpill{margin:0 0 0 auto}
+@media(max-width:760px){body{grid-template-columns:1fr}.side{position:fixed;inset:auto 0 0 0;height:auto;z-index:15;padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--rule);gap:0}.side .logo,.side .safe,.side .syncpill{display:none!important}nav{flex-direction:row;justify-content:space-around;gap:0}nav a{flex:1 1 0;flex-direction:column;gap:2px;font-size:11px;padding:6px 2px;text-align:center}nav a.on{background:none}nav a.on span{color:var(--acc)}main{padding-bottom:110px}.mtop{display:flex!important}}
+.mtop{display:none;align-items:center;gap:10px;font-weight:800;font-size:20px;margin-bottom:14px}.mtop i{width:30px;height:30px;border-radius:10px;background:var(--acc);color:var(--onacc);display:grid;place-items:center;font-style:normal;font-size:16px}
+h1{font-weight:800;font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-.03em;margin:0 0 8px;text-wrap:balance}
+h2{font-weight:700;font-size:18px;line-height:1.3;margin:0 0 14px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 22px;max-width:70ch}
+.card{background:var(--card);border-radius:var(--r);padding:clamp(16px,2.2vw,24px);margin-bottom:18px}
+.hero{background:var(--acc);color:var(--onacc);border-radius:26px;padding:clamp(22px,3.5vw,36px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:18px}
+.hero h1{font-size:15px;font-weight:600;letter-spacing:0;margin:0;opacity:.8}
+.hero .big{font-weight:800;font-size:clamp(44px,8vw,76px);line-height:1;letter-spacing:-.045em;margin:6px 0 10px;white-space:nowrap}
+.hero p{margin:0;font-weight:500;max-width:46ch}
+.hero svg{width:clamp(110px,16vw,150px);height:auto}
+@media(max-width:460px){.hero{gap:12px}.hero svg{width:84px}.hero .big{font-size:44px}}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.figs div{background:var(--card);border-radius:16px;padding:14px 16px}
+.figs small{display:block;color:var(--mute);font-size:13px;font-weight:600}
+.figs strong{font-weight:800;font-size:clamp(20px,2.4vw,26px);letter-spacing:-.03em;white-space:nowrap}
+@media(max-width:700px){.figs{grid-template-columns:1fr 1fr}}
+.cols{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:960px){.cols{grid-template-columns:1fr}}
+.bars{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;height:200px;align-items:end}
+.bar{display:flex;gap:4px;align-items:flex-end;justify-content:center;height:100%;text-decoration:none;border-radius:10px;padding:0 2px}
+.bar:hover{background:var(--card2)}
+.bar i{display:block;width:min(20px,40%);border-radius:7px;min-height:4px;transform-origin:bottom;animation:grow .6s cubic-bezier(.2,.8,.2,1) both}
+.bar i.in{background:var(--in)}.bar i.out{background:var(--spend)}
+.bar.sel i.out{background:var(--acc)}
+@keyframes grow{from{transform:scaleY(0)}}
+@media(prefers-reduced-motion:reduce){.bar i{animation:none}}
+.blabels{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;font-size:13px;color:var(--mute);text-align:center;margin-top:8px;font-weight:600}
+.blabels .sel{color:var(--ink)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mute);margin:12px 0 0}
+.key{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.meter{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr) 9.5em;gap:14px;align-items:center;padding:9px 0;font-size:15px;font-weight:500}
+@media(max-width:520px){.meter{grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}.meter .track{grid-column:1/-1;order:3}}
+.track{height:10px;background:var(--card2);border-radius:6px;position:relative;overflow:hidden}
+.track i{position:absolute;inset:0 auto 0 0;background:var(--acc);border-radius:6px}
+.track i.over{background:var(--red)}
+.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mute{color:var(--mute)}
+ul.plain{list-style:none;margin:0;padding:0}
+.upcoming li{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:12px;padding:8px 0;align-items:center}
+.upcoming .d{background:var(--card2);border-radius:12px;text-align:center;font-weight:800;font-size:18px;line-height:1.1;padding:6px 0}
+.upcoming .d small{display:block;font-weight:600;font-size:11px;color:var(--mute)}
+.upcoming .who{font-size:15px;font-weight:600}.upcoming .who small{display:block;color:var(--mute);font-size:13px;font-weight:500}
+.upcoming .num{font-weight:700}
+.note{background:var(--card);border-left:4px solid var(--acc);padding:12px 16px;border-radius:14px;margin:0 0 12px;display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.note.warn{border-left-color:var(--red)}
+.note p{margin:0;flex:1 1 260px}
+button,.btn{font:600 15px "Plus Jakarta Sans",sans-serif;min-height:44px;padding:0 18px;border-radius:999px;border:0;background:var(--card2);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+button:hover,.btn:hover{filter:brightness(.96)}
+button.pri,.btn.pri{background:var(--acc);color:var(--onacc)}
+button.sm,.btn.sm{min-height:36px;padding:0 14px;font-size:14px}
+button.link{background:none;color:var(--acc);padding:0 4px;min-height:36px}
+button:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+input,select,textarea{font:500 16px "Plus Jakarta Sans",sans-serif;min-height:44px;padding:0 12px;border:1px solid var(--rule);border-radius:12px;background:var(--card);color:var(--ink);max-width:100%}
+textarea{padding:12px;width:100%;min-height:110px;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-weight:600;color:var(--mute);font-size:13px;border-bottom:1px solid var(--rule);padding:8px 10px 10px 0}
+td{border-bottom:1px solid var(--rule);padding:8px 10px 8px 0;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+th.num,td.num{text-align:right}
+td select,td input{min-height:38px;background:var(--card2);border-color:transparent}
+td input.bud{width:7.5em;text-align:right}
+tfoot td{font-weight:800;border-top:1px solid var(--rule);border-bottom:0;padding-top:12px}
+.pos{color:var(--in);font-weight:600}.red{color:var(--red)}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--card2);color:var(--mute);margin:2px 4px 2px 0;white-space:nowrap}
+.badge.r{background:var(--rsoft);color:var(--red)}.badge.t{background:var(--insoft);color:var(--in)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px;align-items:center}
+.toolbar input[type=search]{flex:1 1 220px}
+.drop{display:block;border:2px dashed var(--rule);border-radius:var(--r);padding:44px 20px;text-align:center;background:var(--card);margin-bottom:18px;cursor:pointer}
+.drop.over{border-color:var(--acc);background:var(--accsoft)}
+.drop h2{margin-bottom:6px;font-size:22px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px;margin:0 0 18px}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--mute)}
+label.chk{display:flex;gap:10px;align-items:center;min-height:44px;font-size:15px}
+label.chk input{min-height:0;width:20px;height:20px;accent-color:var(--acc)}
+.panel{background:var(--card);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.rec{background:var(--card);border-radius:18px;padding:16px 18px;margin-bottom:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px}
+.rec h3{margin:0;font-size:17px;font-weight:700}
+.rec .amt{font-weight:800;font-size:22px;letter-spacing:-.02em;text-align:right;white-space:nowrap}
+.rec .amt small{display:block;font-size:13px;font-weight:500;color:var(--mute);letter-spacing:0}
+.rec .meta{color:var(--mute);font-size:14px}
+.rec .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.rec details{grid-column:1/-1;font-size:14px;color:var(--mute)}
+.rec details summary{cursor:pointer;min-height:32px;display:flex;align-items:center;font-weight:600}
+.rec.dim{opacity:.55}
+details>summary.btn{list-style:none}details>summary.btn::-webkit-details-marker{display:none}details[open]>summary.btn{display:none}
+section{margin-top:30px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:16px;display:none;gap:12px;align-items:center;width:max-content;max-width:calc(100vw - 32px);z-index:20;flex-wrap:wrap;font-size:15px;font-weight:500;box-shadow:0 10px 30px rgb(0 0 0/.25)}
+@media(max-width:760px){#toast{bottom:90px}}
+#toast.on{display:flex}
+#toast button{background:var(--acc);color:var(--onacc);min-height:36px}
+#modal{position:fixed;inset:0;background:rgb(0 0 0/.55);display:none;place-items:center;z-index:30;padding:16px}
+#modal.on{display:grid}
+#modal>div{background:var(--card);border-radius:22px;padding:24px;max-width:440px;width:100%}
+#modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+pre,.scroll{overflow-x:auto}code{overflow-wrap:anywhere;background:var(--card2);padding:2px 6px;border-radius:6px;font-size:14px}
+@media(max-width:600px){table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--rule)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute);font-size:13px}.stack td:empty{display:none}.stack td.num{text-align:start}.stack tfoot td{border:0}}
+</style><script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script></head><body>
+<aside class="side">
+  <div class="logo"><i>T</i>Tally</div>
+  <nav id="nav">
+    <a href="#overview"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+    <a href="#transactions"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>Activity</span></a>
+    <a href="#recurring"><svg viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg><span>Bills</span></a>
+    <a href="#budget"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span>Budget</span></a>
+    <a href="#import"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 17v3h16v-3"/></svg><span>Import</span></a>
+    <a href="#rules"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Settings</span></a>
+  </nav>
+  <button class="syncpill sm" data-a="sync" hidden></button>
+  <div class="safe"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Your data stays on your phones and in your own Google Drive.</div>
+</aside>
+<main><div class="mtop"><i>T</i>Tally<button class="syncpill sm" data-a="sync" hidden></button></div><div id="main"></div></main>
+<div id="toast" role="status"></div>
+<div id="modal" role="dialog" aria-modal="true"><div><p id="mtext"></p><div class="row"><button data-a="mno">Cancel</button><button class="pri" data-a="myes" id="mok">OK</button></div></div></div>
+<script>
+{
+/* ---------- helpers ---------- */
+const LS='tally-budget-v1';
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+const dn=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5;
+const nd=n=>iso(new Date(Math.round(n)*864e5));
+const addDays=(s,k)=>nd(dn(s)+k);
+const addMonths=(s,k)=>{let y=+s.slice(0,4),m=+s.slice(5,7)-1+k;const d=+s.slice(8,10);y+=Math.floor(m/12);m=((m%12)+12)%12;const last=new Date(Date.UTC(y,m+1,0)).getUTCDate();return y+'-'+pad(m+1)+'-'+pad(Math.min(d,last))};
+const now=new Date();
+const TODAY=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+const ym=s=>s.slice(0,7);
+const monthName=(k,short)=>new Date(Date.UTC(+k.slice(0,4),+k.slice(5,7)-1,1)).toLocaleDateString('en-AU',short?{month:'short',timeZone:'UTC'}:{month:'long',year:'numeric',timeZone:'UTC'});
+const dayLabel=s=>new Date(dn(s)*864e5).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+const A2=new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD'});
+const A0=new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:0});
+const m2=n=>A2.format(n),m0=n=>A0.format(Math.round(n));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const title=s=>s.toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());
+
+/* ---------- defaults ---------- */
+const DEF_CATS=[['salary','Salary & wages','income',0],['otherinc','Other income & refunds','income',0],['housing','Mortgage & rent','expense',2900],['groceries','Groceries','expense',1500],['utilities','Power, gas & water','expense',320],['phone','Phone & internet','expense',160],['insurance','Insurance & health cover','expense',620],['transport','Fuel & transport','expense',450],['childcare','Childcare & school','expense',950],['kids','Kids activities','expense',120],['health','Health & pharmacy','expense',100],['dining','Eating out & takeaway','expense',350],['subs','Subscriptions','expense',80],['shopping','Shopping & household','expense',400],['car','Car (rego, service)','expense',120],['rates','Council rates','expense',170],['fun','Entertainment','expense',100],['gifts','Gifts','expense',60],['other','Other spending','expense',150],['transfer','Transfers & savings','transfer',0]];
+const DEF_RULES=[['SALARY|PAYROLL|WAGES','salary'],['TRANSFER|TFR|SAVINGS|INTERNAL','transfer'],['HOME LOAN|MORTGAGE|LOAN REPAYMENT|RENT','housing'],['WOOLWORTHS|COLES|ALDI|IGA|HARRIS FARM|COSTCO|FOODWORKS','groceries'],['AGL|ORIGIN|ENERGYAUSTRALIA|RED ENERGY|ALINTA|HUNTER WATER|SYDNEY WATER|JEMENA|ENGIE|SIMPLY ENERGY','utilities'],['TELSTRA|OPTUS|VODAFONE|TPG|AUSSIE BROADBAND|BELONG|IINET|BOOST|AMAYSIM','phone'],['NRMA|AAMI|BUDGET DIRECT|ALLIANZ|YOUI|SUNCORP|GIO|QBE|MEDIBANK|BUPA|NIB|HCF|AHM','insurance'],['AMPOL|CALTEX|BP|SHELL|7-ELEVEN|UNITED PETROLEUM|METRO PETROLEUM|LINKT|TRANSPORT FOR NSW|OPAL|DIDI','transport'],['GOODSTART|CHILDCARE|EARLY LEARNING|OSHC|SCHOOL|UNIFORM','childcare'],['SWIM|SWIMSTARS|DANCE|FOOTBALL|SOCCER|NETBALL|GYMNASTICS|MUSIC LESSON','kids'],['CHEMIST|PHARMACY|PRICELINE|MEDICAL|DENTAL|DOCTOR|PHYSIO|PATHOLOGY','health'],['UBER EATS|MENULOG|DOORDASH|MCDONALDS|KFC|HUNGRY JACKS|DOMINOS|CAFE|PIZZA|SUSHI|RESTAURANT|BAKERY','dining'],['NETFLIX|SPOTIFY|STAN|DISNEY|BINGE|KAYO|YOUTUBE|APPLE.COM|GOOGLE ONE|AMAZON PRIME|PARAMOUNT|ICLOUD','subs'],['KMART|BIG W|TARGET|BUNNINGS|MYER|DAVID JONES|IKEA|OFFICEWORKS|AMAZON|JB HI-FI|HARVEY NORMAN','shopping'],['REGO|SERVICE NSW|MECHANIC|TYRES|GREEN SLIP','car'],['RATES|COUNCIL','rates'],['CINEMA|CINEMAS|HOYTS|TICKETEK|TICKETMASTER|STEAM|PLAYSTATION','fun'],['GIFT|TOYWORLD','gifts']];
+
+/* ---------- merchant + rules ---------- */
+const NOISE=/\b(VISA|DEBIT|CREDIT|PURCHASE|EFTPOS|POS|CARD|DIRECT|DD|BPAY|OSKO|NPP|PAYMENT|PAYMENTS|TO|FROM|AUTHORISATION|PENDING|VALUE|DATE|AUD|AU|AUS|AUSTRALIA|NSW|VIC|QLD|SA|WA|TAS|ACT|NT|REF|RECEIPT|INTERNET|TRANSFER|TFR|PTY|LTD|THE|WWW|COM|NET|ORG|INV|NO|SP|SQ)\b/g;
+function merch(d){const s=String(d).toUpperCase().replace(/[^A-Z0-9& ]+/g,' ').replace(/\b\w*\d\w*\b/g,' ').replace(NOISE,' ').replace(/\s+/g,' ').trim();const w=s.split(' ').filter(x=>x.length>1);return w.slice(0,3).join(' ')||String(d).toUpperCase().trim().slice(0,24)}
+const reCache=new Map();
+function ruleRe(m){if(!reCache.has(m)){const alts=m.split('|').map(x=>x.trim().toUpperCase()).filter(Boolean).map(x=>x.replace(/[.*+?^${}()[\]\\]/g,'\\$&'));reCache.set(m,alts.length?new RegExp('(^|[^A-Z0-9])('+alts.join('|')+')($|[^A-Z0-9])'):null)}return reCache.get(m)}
+function autoCat(t,rules){const hay=String(t.desc).toUpperCase()+' | '+merch(t.desc);for(const r of rules){const re=ruleRe(r.match);if(re&&re.test(hay))return r.cat}return t.amt>0?'otherinc':''}
+
+/* ---------- state ---------- */
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+function makeSample(rules){
+  const R=rng(20261124),r=(a,b)=>a+R()*(b-a),pick=a=>a[Math.floor(R()*a.length)],out=[];
+  const m0=TODAY.slice(0,8)+'01',start=addMonths(m0,-5);
+  const add=(d,desc,a)=>{if(d>=start&&d<=TODAY)out.push({id:uid(),date:d,desc,amt:Math.round(a*100)/100,acct:'Everyday account',cat:'',sample:true})};
+  const day=(m,d)=>m.slice(0,8)+pad(d);
+  for(let i=0;i<=6;i++){const m=addMonths(m0,i-6);
+    add(day(m,1),'HOME LOAN REPAYMENT 4471 0092',-2864);
+    add(day(m,3),'NETFLIX.COM SYDNEY AUS',i>=5?-20.99:-18.99);
+    add(day(m,9),'SPOTIFY P2F4A1C SYDNEY',-22.99);
+    add(day(m,12),'TELSTRA DIRECT DEBIT 77812',-89);
+    add(day(m,15),'PAYROLL HUNTER VALLEY COUNCIL',4105.2);
+    add(day(m,16),'TRANSFER TO SAVINGS 012345',-800);
+    add(day(m,20),'NRMA INSURANCE DD 55120',-142.3);
+    add(day(m,25),'AMAZON PRIME AU',-9.99);
+    if(i%3===1){add(day(m,22),'AGL SALES PTY LTD BPAY',-r(410,540));add(day(m,27),'CITY OF NEWCASTLE RATES BPAY',-486)}
+    if(i%3===2)add(day(m,6),'HUNTER WATER CORPORATION BPAY',-r(240,265));
+  }
+  for(let d=addDays(start,2);d<=TODAY;d=addDays(d,14)){add(d,'SALARY ACME SURVEYS PTY LTD',3412.5);add(addDays(d,1),'MEDIBANK PRIVATE DD',-186.4);add(addDays(d,5),'SWIMSTARS LEARN TO SWIM',-44)}
+  for(let d=start;d<=TODAY;d=addDays(d,7)){
+    add(d,'GOODSTART EARLY LEARNING DD',-212);
+    add(addDays(d,1+Math.floor(r(0,2))),'WOOLWORTHS 1182 KOTARA',-r(130,245));
+    add(addDays(d,4+Math.floor(r(0,2))),'ALDI STORES 54 CHARLESTOWN',-r(45,115));
+    if(R()<.5)add(addDays(d,3),'WOOLWORTHS 1182 KOTARA',-r(18,60));
+    add(addDays(d,Math.floor(r(0,7))),R()<.5?'AMPOL FOODARY NEW LAMBTON':'BP CONNECT MAYFIELD',-r(68,108));
+    const n=1+Math.floor(r(0,3));for(let k=0;k<n;k++)add(addDays(d,Math.floor(r(0,7))),pick(['UBER *EATS SYDNEY','MCDONALDS HAMILTON','THE FOUNDRY CAFE MEREWETHER','DOMINOS PIZZA ADAMSTOWN']),-r(14,78));
+    if(R()<.45)add(addDays(d,Math.floor(r(0,7))),pick(['KMART 1043 KOTARA','BUNNINGS 2410 KOTARA','BIG W JESMOND','TARGET CHARLESTOWN']),-r(22,190));
+    if(R()<.2)add(addDays(d,Math.floor(r(0,7))),'PRICELINE PHARMACY KOTARA',-r(12,60));
+    if(R()<.15)add(addDays(d,Math.floor(r(0,7))),'EVENT CINEMAS KOTARA',-r(38,72));
+  }
+  add(addDays(start,40),'SERVICE NSW REGO RENEWAL',-912.4);
+  add(addDays(start,76),'TOYWORLD BIRTHDAY GIFT',-64.95);
+  add(addDays(start,98),'MYER REFUND KOTARA',54);
+  out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  out.forEach(t=>t.cat=autoCat(t,rules));
+  return out;
+}
+function fresh(withSample){const s={v:1,cats:DEF_CATS.map(([id,name,type,budget])=>({id,name,type,budget})),rules:DEF_RULES.map(([match,cat],i)=>({id:'d'+i,match,cat})),txns:[],recur:{}};if(withSample)s.txns=makeSample(s.rules);return s}
+function load(){try{const r=localStorage.getItem(LS)||localStorage.getItem('kitty-budget-v1');if(r){const s=JSON.parse(r);if(s&&Array.isArray(s.txns))return s}}catch(e){}return null}
+let storeOK=true;
+function persist(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){storeOK=false}}
+function save(){persist();dirty=true;schedSync()}
+let S=load()||fresh(true);
+const U={view:'overview',month:null,q:'',fcat:'',facct:'',fmon:'',limit:200,pending:null,queue:[],rshow:'all'};
+const C=id=>S.cats.find(c=>c.id===id);
+const typeOf=t=>t.cat?(C(t.cat)?.type||'expense'):(t.amt<0?'expense':'income');
+const months=()=>{const s=[...new Set(S.txns.map(t=>ym(t.date)))].sort();return s.length?s:[ym(TODAY)]};
+const accounts=()=>[...new Set(S.txns.map(t=>t.acct))].sort();
+function curMonth(){const ms=months();if(!U.month||!ms.includes(U.month))U.month=ms[ms.length-1];return U.month}
+function stats(k){let inc=0,out=0;const by={};for(const t of S.txns){if(ym(t.date)!==k)continue;const ty=typeOf(t);if(ty==='transfer')continue;if(ty==='income')inc+=t.amt;else{out-=t.amt;by[t.cat]=(by[t.cat]||0)-t.amt}}return{inc,out,by}}
+const budgetTotal=()=>sum(S.cats.filter(c=>c.type==='expense').map(c=>+c.budget||0));
+function avg3(k){const ks=[1,2,3].map(i=>ym(addMonths(k+'-01',-i))).filter(x=>months().includes(x));const by={};ks.forEach(x=>{const s=stats(x).by;for(const c in s)by[c]=(by[c]||0)+s[c]/ks.length});return{by,n:ks.length}}
+
+/* ---------- recurring detection ---------- */
+const FREQ=[{n:'Weekly',d:7,tol:2,g:6},{n:'Fortnightly',d:14,tol:3,g:8},{n:'Monthly',d:30.44,tol:4,g:12,m:1},{n:'Quarterly',d:91.3,tol:12,g:28,m:3},{n:'Half-yearly',d:182.6,tol:20,g:40,m:6},{n:'Yearly',d:365.25,tol:25,g:50,m:12}];
+const step=(d,f)=>f.m?addMonths(d,f.m):addDays(d,Math.round(f.d));
+function detect(){
+  const groups=new Map();
+  for(const t of S.txns){const k=merch(t.desc)+(t.amt<0?' out':' in');if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t)}
+  const end=S.txns.reduce((m,t)=>t.date>m?t.date:m,'0000-00-00');
+  const out=[];
+  for(const [key,arr] of groups){
+    if(arr.length<2)continue;
+    arr.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+    const ds=[],am=[];
+    for(const t of arr){if(ds.length&&ds[ds.length-1]===t.date){am[am.length-1]+=Math.abs(t.amt);continue}ds.push(t.date);am.push(Math.abs(t.amt))}
+    if(ds.length<2)continue;
+    const iv=ds.slice(1).map((d,i)=>dn(d)-dn(ds[i]));
+    const f=FREQ.find(f=>Math.abs(median(iv)-f.d)<=f.tol);
+    if(!f||ds.length<(f.d>=90?2:3))continue;
+    const ok=iv.filter(i=>Math.abs(i-f.d)<=f.tol+(f.m?3:0)).length/iv.length;
+    if(ok<.7)continue;
+    const mean=sum(am)/am.length,cv=Math.sqrt(sum(am.map(a=>(a-mean)**2))/am.length)/mean;
+    if(cv>.35)continue;
+    const last=am[am.length-1],near=(a,b)=>Math.abs(a-b)<=Math.max(.015*b,.01);
+    let run=1;while(run<am.length&&near(am[am.length-1-run],last))run++;
+    const before=am.slice(0,am.length-run);let changed=null;
+    if(before.length>=2){const mb=median(before);if(before.every(a=>near(a,mb))&&!near(last,mb))changed={from:mb,to:last,since:ds[ds.length-run]}}
+    const fixed=!!changed||am.every(a=>Math.abs(a-mean)<=Math.max(.05*mean,.5));
+    if(!fixed&&f.d<28)continue;
+    const typical=fixed?last:mean;
+    const next=step(ds[ds.length-1],f);
+    const lapsed=dn(end)-dn(next)>f.g;
+    const cc={};arr.forEach(t=>cc[t.cat]=(cc[t.cat]||0)+1);
+    const cat=Object.keys(cc).sort((a,b)=>cc[b]-cc[a])[0]||'';
+    out.push({key,name:title(key.replace(/ (in|out)$/,'')),cat,f,n:ds.length,typical,fixed,changed,first:ds[0],last:ds[ds.length-1],next,lapsed,sign:arr[0].amt<0?-1:1,perMonth:typical*30.44/f.d,hist:arr.slice(-8).reverse(),conf:ok>=.9&&ds.length>=4?'High':'Medium',status:S.recur[key]||'detected'});
+  }
+  return out.sort((a,b)=>b.perMonth-a.perMonth);
+}
+function upcoming(rec,days){
+  const lim=addDays(TODAY,days),out=[];
+  for(const r of rec){if(r.status==='dismissed'||r.lapsed)continue;let d=r.next,g=0;while(d<TODAY&&g++<500)d=step(d,r.f);while(d<=lim&&g++<600){out.push({d,r});d=step(d,r.f)}}
+  return out.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+}
+
+/* ---------- parsing ---------- */
+function parseCSV(text){
+  const first=text.split(/\r?\n/).find(l=>l.trim())||'';
+  const dl=[',',';','\t','|'].map(c=>[c,first.split(c).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;else if(c===dl){row.push(f);f=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f=''}
+    else f+=c}
+  if(f||row.length){row.push(f);rows.push(row)}
+  return rows.map(r=>r.map(x=>x.trim())).filter(r=>r.some(x=>x));
+}
+const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+function parseDate(s,fmt){
+  s=String(s||'').trim();let y,m,d,x;
+  if(x=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/)){y=+x[1];m=+x[2];d=+x[3]}
+  else if(x=s.match(/^(\d{4})(\d{2})(\d{2})/)){y=+x[1];m=+x[2];d=+x[3]}
+  else if(x=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/)){y=+x[3];if(fmt==='mdy'){m=+x[1];d=+x[2]}else{d=+x[1];m=+x[2]}}
+  else if(x=s.match(/^(\d{1,2})[\s\-]([A-Za-z]{3})[A-Za-z]*[\s\-,]+(\d{2,4})/)){d=+x[1];m=MON[x[2].toLowerCase()];y=+x[3]}
+  else if(x=s.match(/^([A-Za-z]{3})[A-Za-z]*\s+(\d{1,2}),?\s+(\d{4})/)){m=MON[x[1].toLowerCase()];d=+x[2];y=+x[3]}
+  else return null;
+  if(y<100)y+=2000;
+  if(!m||m>12||!d||d>31)return null;
+  return y+'-'+pad(m)+'-'+pad(d);
+}
+function parseAmt(s){
+  s=String(s??'').trim();if(!s)return NaN;let neg=false;
+  if(/^\(.*\)$/.test(s)){neg=true;s=s.slice(1,-1)}
+  if(/\bDR$/i.test(s)){neg=true;s=s.replace(/DR$/i,'')}
+  s=s.replace(/CR$/i,'').replace(/[$\s,]|AUD/gi,'');
+  if(s.endsWith('-')){neg=true;s=s.slice(0,-1)}
+  if(!/^[+-]?\d*\.?\d+$/.test(s))return NaN;
+  const v=parseFloat(s);return neg?-Math.abs(v):v;
+}
+function autoMap(rows,fname){
+  const isD=v=>!!parseDate(v,'dmy'),isN=v=>!isNaN(parseAmt(v));
+  const head=rows[0],hasHeader=!head.some(isD)&&head.filter(v=>v&&isNaN(parseAmt(v))).length>=Math.ceil(head.length/2);
+  const map={date:-1,desc:-1,amt:-1,debit:-1,credit:-1};
+  const data=(hasHeader?rows.slice(1):rows).slice(0,40),n=Math.max(...rows.slice(0,40).map(r=>r.length));
+  if(hasHeader){const h=head.map(x=>x.toLowerCase()),fi=(re,not)=>h.findIndex((x,i)=>re.test(x)&&!(not&&not.test(x))&&!Object.values(map).includes(i));
+    map.date=fi(/date/);map.debit=fi(/debit|withdraw|money out|paid out|spent/);map.credit=fi(/credit|deposit|money in|paid in|received/);map.amt=fi(/amount|value|transaction amount/,/balance/);map.desc=fi(/desc|narrat|details|memo|payee|particular|transaction|merchant|reference/);
+    if(map.amt>=0){map.debit=-1;map.credit=-1}}
+  const col=i=>data.map(r=>r[i]??'').filter(Boolean);
+  if(map.date<0)for(let i=0;i<n;i++){const c=col(i);if(c.length&&c.filter(isD).length/c.length>.8){map.date=i;break}}
+  if(map.amt<0&&map.debit<0&&map.credit<0){const nums=[];for(let i=0;i<n;i++){if(i===map.date)continue;const c=col(i);if(c.length&&c.filter(isN).length/c.length>.8)nums.push(i)}const signed=nums.find(i=>col(i).some(v=>parseAmt(v)<0));map.amt=signed??nums[0]??-1}
+  if(map.desc<0){let best=-1,bl=0;for(let i=0;i<n;i++){if([map.date,map.amt,map.debit,map.credit].includes(i))continue;const c=col(i);const l=c.length?sum(c.map(v=>isN(v)?0:v.length))/c.length:0;if(l>bl){bl=l;best=i}}map.desc=best}
+  let fmt='dmy';const dc=map.date>=0?col(map.date):[];
+  if(dc.some(v=>{const x=v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.]/);return x&&+x[2]>12})&&!dc.some(v=>{const x=v.match(/^(\d{1,2})[-\/.]/);return x&&+x[1]>12}))fmt='mdy';
+  const acct=title(fname.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ').trim()).slice(0,32)||'Account';
+  return{name:fname,rows,hasHeader,map,fmt,invert:false,acct:accounts().find(a=>a.toLowerCase()===acct.toLowerCase())||acct,n};
+}
+function buildRows(p){
+  const out=[];let bad=0;
+  for(const r of (p.hasHeader?p.rows.slice(1):p.rows)){
+    const date=parseDate(r[p.map.date],p.fmt);
+    let amt=p.map.amt>=0?parseAmt(r[p.map.amt]):(Math.abs(parseAmt(r[p.map.credit])||0)-Math.abs(parseAmt(r[p.map.debit])||0));
+    if(p.invert)amt=-amt;
+    const desc=(r[p.map.desc]||'').replace(/\s+/g,' ').trim();
+    if(!date||isNaN(amt)||amt===0){bad++;continue}
+    out.push({date,desc:desc||'(no description)',amt:Math.round(amt*100)/100});
+  }
+  return{out,bad};
+}
+function parseOFX(text){
+  const out=[],g=(b,t)=>{const x=b.match(new RegExp('<'+t+'>([^<\\r\\n]*)','i'));return x?x[1].trim():''};
+  for(const b of text.split(/<STMTTRN>/i).slice(1)){const date=parseDate(g(b,'DTPOSTED').slice(0,8)),amt=parseAmt(g(b,'TRNAMT'));const name=g(b,'NAME'),memo=g(b,'MEMO');if(date&&!isNaN(amt))out.push({date,amt,desc:(name+(memo&&memo!==name?' '+memo:''))||'(no description)'})}
+  return out;
+}
+const tkey=t=>t.date+'|'+t.amt.toFixed(2)+'|'+String(t.desc).trim().toUpperCase();
+function commitImport(list,acct){
+  let cleared=false;
+  if(S.txns.length&&S.txns.every(t=>t.sample)){S.txns=[];S.recur={};cleared=true}
+  const seen=new Map();S.txns.filter(t=>t.acct===acct).forEach(t=>{const k=tkey(t);seen.set(k,(seen.get(k)||0)+1)});
+  const inc=new Map();let added=0,dup=0;
+  for(const t of list){const k=tkey(t),n=(inc.get(k)||0)+1;inc.set(k,n);if(n<=(seen.get(k)||0)){dup++;continue}const nt={id:uid(),date:t.date,desc:t.desc,amt:t.amt,acct,cat:''};nt.cat=autoCat(nt,S.rules);S.txns.push(nt);added++}
+  S.txns.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  U.month=null;save();
+  toast(`${acct}: imported ${added} transaction${added===1?'':'s'}${dup?`, skipped ${dup} already loaded`:''}${cleared?' (sample data removed)':''}.`);
+}
+
+/* ---------- UI bits ---------- */
+const $=s=>document.querySelector(s);
+let tt;function toast(msg,btn,fn){const t=$('#toast');t.innerHTML='<span>'+esc(msg)+'</span>'+(btn?'<button id="tbtn">'+esc(btn)+'</button>':'');t.classList.add('on');if(btn)$('#tbtn').onclick=()=>{t.classList.remove('on');fn()};clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),btn?9000:4500)}
+let mcb=null;function ask(msg,ok,cb){$('#mtext').textContent=msg;$('#mok').textContent=ok;mcb=cb;$('#modal').classList.add('on');$('#mok').focus()}
+const catOpts=(sel,blank='Uncategorised')=>`<option value="">${blank}</option>`+['income','expense','transfer'].map(ty=>`<optgroup label="${ty==='income'?'Income':ty==='expense'?'Spending':'Transfers'}">`+S.cats.filter(c=>c.type===ty).map(c=>`<option value="${c.id}"${c.id===sel?' selected':''}>${esc(c.name)}</option>`).join('')+'</optgroup>').join('');
+const catName=id=>id?(C(id)?.name||'Unknown'):'Uncategorised';
+const monthSel=()=>`<select data-c="month" aria-label="Month">${months().slice().reverse().map(k=>`<option value="${k}"${k===curMonth()?' selected':''}>${monthName(k)}</option>`).join('')}</select>`;
+const amtCell=a=>`<span class="${a>0?'pos':''}">${a>0?'+':''}${m2(a)}</span>`;
+
+/* ---------- views ---------- */
+const V={};
+V.overview=()=>{
+  const k=curMonth(),st=stats(k),bt=budgetTotal(),left=bt-st.out,isNow=k===ym(TODAY);
+  const lastDay=new Date(Date.UTC(+k.slice(0,4),+k.slice(5,7),0)).getUTCDate(),daysLeft=isNow?lastDay-+TODAY.slice(8,10):0;
+  const rec=detect(),live=rec.filter(r=>r.status!=='dismissed'&&!r.lapsed);
+  const commit=sum(live.filter(r=>r.sign<0).map(r=>r.perMonth));
+  const ms=months(),i=ms.indexOf(k),win=ms.slice(Math.max(0,i-5),i+1),ws=win.map(x=>[x,stats(x)]),mx=Math.max(1,...ws.map(([,s])=>Math.max(s.inc,s.out)));
+  const unc=S.txns.filter(t=>ym(t.date)===k&&!t.cat).length;
+  const alerts=[];
+  if(S.txns.some(t=>t.sample))alerts.push(`<div class="note"><p>You're looking at sample data for a made-up Newcastle family. Import your own statement and it replaces this.</p><span><a class="btn sm pri" href="#import">Import a statement</a> <button class="sm" data-a="clearsample">Start empty</button></span></div>`);
+  rec.filter(r=>r.changed&&r.status!=='dismissed'&&!r.lapsed&&r.sign<0).forEach(r=>alerts.push(`<div class="note warn"><p><b>${esc(r.name)}</b> went up from ${m2(r.changed.from)} to ${m2(r.changed.to)} on ${dayLabel(r.changed.since)}. That's ${m0((r.changed.to-r.changed.from)*365.25/r.f.d)} more a year.</p><a class="btn sm" href="#recurring">Review</a></div>`));
+  rec.filter(r=>r.lapsed&&r.status==='confirmed').forEach(r=>alerts.push(`<div class="note warn"><p><b>${esc(r.name)}</b> hasn't come out since ${dayLabel(r.last)}. Was it cancelled?</p><a class="btn sm" href="#recurring">Check</a></div>`));
+  if(unc)alerts.push(`<div class="note"><p>${unc} transaction${unc>1?'s':''} in ${monthName(k)} still need a category.</p><button class="sm" data-a="showunc">Categorise</button></div>`);
+  const cats=S.cats.filter(c=>c.type==='expense'&&((st.by[c.id]||0)>0||c.budget>0)).map(c=>({c,sp:st.by[c.id]||0})).sort((a,b)=>(b.sp/(b.c.budget||1))-(a.sp/(a.c.budget||1)));
+  if(st.by['']>0)cats.push({c:{id:'',name:'Uncategorised',budget:0},sp:st.by['']});
+  const up=upcoming(rec,30);
+  const headline=left>=0?`${m0(left)} left in ${monthName(k).split(' ')[0]}'s budget`:`${m0(-left)} over budget in ${monthName(k).split(' ')[0]}`;
+  const mon=monthName(k).split(' ')[0],pct=bt?st.out/bt:0,R=52,CF=2*Math.PI*R;
+  return `<div class="toolbar" style="justify-content:space-between"><span class="mute">${isNow?`${daysLeft} day${daysLeft===1?'':'s'} to go this month`:'Month shown'}</span>${monthSel()}</div>
+  ${alerts.join('')}
+  <div class="hero"><div><h1>${left>=0?'Left to spend':'Over budget'} in ${mon}</h1><div class="big">${left<0?'−':''}${m0(Math.abs(left))}</div>
+  <p>${m0(st.out)} spent of your ${m0(bt)} budget. ${st.inc-st.out>=0?`You've kept ${m0(st.inc-st.out)} of what came in.`:`You've spent ${m0(st.out-st.inc)} more than came in.`}</p></div>
+  <svg viewBox="0 0 120 120" role="img" aria-label="${Math.round(pct*100)}% of budget spent"><circle cx="60" cy="60" r="${R}" fill="none" stroke="rgb(0 0 0/.14)" stroke-width="12"/><circle cx="60" cy="60" r="${R}" fill="none" stroke="#1d0c07" stroke-width="12" stroke-linecap="round" stroke-dasharray="${Math.min(1,pct)*CF} ${CF}" transform="rotate(-90 60 60)"/><text x="60" y="60" text-anchor="middle" font-size="24" font-weight="800" fill="#1d0c07">${Math.round(pct*100)}%</text><text x="60" y="78" text-anchor="middle" font-size="11" font-weight="600" fill="#1d0c07" opacity=".75">spent</text></svg></div>
+  <div class="figs"><div><small>Money in</small><strong class="pos">${m0(st.inc)}</strong></div><div><small>Spending</small><strong>${m0(st.out)}</strong></div><div><small>Kept</small><strong class="${st.inc-st.out<0?'red':''}">${m0(st.inc-st.out)}</strong></div><div><small>Regular bills / month</small><strong>${m0(commit)}</strong></div></div>
+  <div class="cols"><div><div class="card">
+    <h2>Money in and out</h2>
+    <div class="bars">${ws.map(([x,s])=>`<a class="bar${x===k?' sel':''}" href="#overview" data-a="pickmonth" data-k="${x}" title="${monthName(x)}: in ${m0(s.inc)}, out ${m0(s.out)}"><i class="in" style="height:${s.inc/mx*100}%"></i><i class="out" style="height:${s.out/mx*100}%"></i></a>`).join('')}</div>
+    <div class="blabels">${ws.map(([x])=>`<span class="${x===k?'sel':''}">${monthName(x,1)}</span>`).join('')}</div>
+    <div class="legend"><span><i class="key" style="background:var(--in)"></i>Money in</span><span><i class="key" style="background:var(--spend)"></i>Spending (transfers to savings left out)</span>${win[0]===ms[0]?'<span>First month may be partial</span>':''}</div>
+    </div><div class="card"><h2>Spending vs budget</h2>
+    ${cats.length?cats.map(({c,sp})=>{const p=c.budget?sp/c.budget*100:100;return`<div class="meter"><span>${esc(c.name)}</span><span class="track"><i class="${c.budget&&sp>c.budget||!c.budget?'over':''}" style="width:${Math.min(100,p)}%"></i></span><span class="num">${m0(sp)} <span class="mute">/ ${c.budget?m0(c.budget):'no budget'}</span></span></div>`}).join(''):'<p class="mute">No spending this month yet.</p>'}
+  </div></div><div class="card">
+    <h2>Coming up · next 30 days</h2>
+    ${up.length?`<ul class="plain upcoming">${up.slice(0,12).map(({d,r})=>`<li><span class="d">${+d.slice(8)}<small>${monthName(ym(d),1)}</small></span><span class="who">${esc(r.name)}<small>${r.f.n}${r.fixed?'':' · varies'}${r.status==='detected'?' · detected':''}</small></span><span class="num ${r.sign>0?'pos':''}">${r.sign>0?'+':'−'}${m2(r.typical)}</span></li>`).join('')}</ul>${up.length>12?`<p class="mute">+${up.length-12} more</p>`:''}
+    <p class="mute" style="margin-top:12px">Bills due: ${m0(sum(up.filter(x=>x.r.sign<0).map(x=>x.r.typical)))} · Pay due: ${m0(sum(up.filter(x=>x.r.sign>0).map(x=>x.r.typical)))}</p>`:'<p class="mute">Nothing regular found yet. Import a few months of statements so repeating payments show up.</p>'}
+    <p style="margin-bottom:0"><a class="btn sm" href="#recurring">All recurring payments</a></p>
+  </div></div>`;
+};
+V.transactions=()=>`<h1>Transactions</h1><p class="sub">Change a category and Tally offers to remember it for that merchant, like a Xero bank rule.</p>
+  <div class="toolbar"><input type="search" placeholder="Search descriptions" value="${esc(U.q)}" data-i="q" aria-label="Search">
+  <select data-c="fcat" aria-label="Category"><option value="">All categories</option><option value="__none"${U.fcat==='__none'?' selected':''}>Uncategorised only</option>${S.cats.map(c=>`<option value="${c.id}"${U.fcat===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select>
+  <select data-c="fmon" aria-label="Month"><option value="">All months</option>${months().slice().reverse().map(k=>`<option value="${k}"${U.fmon===k?' selected':''}>${monthName(k)}</option>`).join('')}</select>
+  ${accounts().length>1?`<select data-c="facct" aria-label="Account"><option value="">All accounts</option>${accounts().map(a=>`<option${U.facct===a?' selected':''}>${esc(a)}</option>`).join('')}</select>`:''}</div>
+  <div class="card" id="txwrap">${txTable()}</div>`;
+function txTable(){
+  const q=U.q.trim().toUpperCase();
+  const list=S.txns.filter(t=>(!q||t.desc.toUpperCase().includes(q))&&(!U.fcat||(U.fcat==='__none'?!t.cat:t.cat===U.fcat))&&(!U.fmon||ym(t.date)===U.fmon)&&(!U.facct||t.acct===U.facct)).slice().reverse();
+  const inn=sum(list.filter(t=>t.amt>0).map(t=>t.amt)),out=-sum(list.filter(t=>t.amt<0).map(t=>t.amt));
+  if(!list.length)return`<p class="mute">No transactions match. ${S.txns.length?'':'<a href="#import">Import a statement</a> to get started.'}</p>`;
+  return `<p class="mute">${list.length} transactions · in ${m2(inn)} · out ${m2(out)}</p>
+  <table class="stack"><thead><tr><th>Date</th><th>Description</th>${accounts().length>1?'<th>Account</th>':''}<th>Category</th><th class="num">Amount</th><th></th></tr></thead><tbody>
+  ${list.slice(0,U.limit).map(t=>`<tr><td style="white-space:nowrap">${dayLabel(t.date)}</td><td>${esc(t.desc)}</td>${accounts().length>1?`<td>${esc(t.acct)}</td>`:''}<td><select data-c="tcat" data-id="${t.id}" aria-label="Category">${catOpts(t.cat)}</select></td><td class="num">${amtCell(t.amt)}</td><td><button class="link" data-a="del" data-id="${t.id}" aria-label="Delete">Delete</button></td></tr>`).join('')}
+  </tbody></table>${list.length>U.limit?`<p><button data-a="more">Show ${Math.min(200,list.length-U.limit)} more</button></p>`:''}`;
+}
+V.recurring=()=>{
+  const rec=detect(),shown=rec.filter(r=>U.rshow==='all'||(U.rshow==='out'?r.sign<0:r.sign>0));
+  const live=rec.filter(r=>r.status!=='dismissed'&&!r.lapsed&&r.sign<0),pm=sum(live.map(r=>r.perMonth));
+  const groups=[['Active',shown.filter(r=>r.status!=='dismissed'&&!r.lapsed)],['Stopped or possibly cancelled',shown.filter(r=>r.status!=='dismissed'&&r.lapsed)],['Ignored',shown.filter(r=>r.status==='dismissed')]];
+  const card=r=>`<div class="rec${r.status==='dismissed'?' dim':''}"><div><h3>${esc(r.name)}</h3><div class="meta">${esc(catName(r.cat))} · ${r.f.n} · ${r.n} payments since ${dayLabel(r.first)}</div>
+    <div>${r.status==='confirmed'?'<span class="badge t">Confirmed</span>':r.status==='detected'?`<span class="badge">Detected · ${r.conf} confidence</span>`:''}${r.fixed?'<span class="badge">Fixed amount</span>':'<span class="badge">Amount varies</span>'}${r.changed?`<span class="badge r">Up from ${m2(r.changed.from)}</span>`:''}${r.lapsed?`<span class="badge r">Last paid ${dayLabel(r.last)}</span>`:''}</div></div>
+    <div class="amt ${r.sign>0?'pos':''}">${m2(r.typical)}<small>${m0(r.perMonth*12)} a year${r.lapsed?'':` · next ${dayLabel(upcoming([{...r,status:'x'}],400)[0]?.d||r.next)}`}</small></div>
+    <div class="acts">${r.status!=='confirmed'?`<button class="sm" data-a="rc" data-k="${esc(r.key)}" data-s="confirmed">Confirm</button>`:''}${r.status!=='dismissed'?`<button class="sm" data-a="rc" data-k="${esc(r.key)}" data-s="dismissed">Not recurring</button>`:''}${r.status!=='detected'?`<button class="link" data-a="rc" data-k="${esc(r.key)}" data-s="detected">Reset</button>`:''}</div>
+    <details><summary>Payment history</summary><table><tbody>${r.hist.map(t=>`<tr><td>${dayLabel(t.date)}</td><td>${esc(t.desc)}</td><td class="num">${amtCell(t.amt)}</td></tr>`).join('')}</tbody></table></details></div>`;
+  return `<h1>${m0(pm)} a month goes out on regular payments</h1>
+  <p class="sub">That's ${m0(pm*12)} a year across ${live.length} regular payment${live.length===1?'':'s'} found in your statements. Tally looks for the same merchant repeating weekly, fortnightly, monthly, quarterly or yearly at a steady amount. Confirm the real ones and ignore the rest.</p>
+  <div class="toolbar">${[['all','Everything'],['out','Bills & subscriptions'],['in','Income']].map(([v,l])=>`<button class="sm${U.rshow===v?' pri':''}" data-a="rshow" data-v="${v}">${l}</button>`).join('')}</div>
+  ${rec.length?groups.map(([h,g])=>g.length?`<section><h2>${h} <span class="mute" style="font-weight:500;font-size:15px">(${g.length})</span></h2>${g.map(card).join('')}</section>`:'').join(''):'<p class="mute">Nothing repeating yet. You need at least three payments to the same place, or two for quarterly and yearly bills, so import two or three months of statements.</p>'}`;
+};
+V.budget=()=>{
+  const k=curMonth(),st=stats(k),av=avg3(k),ex=S.cats.filter(c=>c.type==='expense');
+  const tb=budgetTotal(),ts=sum(ex.map(c=>st.by[c.id]||0));
+  return `<div class="toolbar" style="justify-content:space-between"><span class="mute">Monthly budgets</span>${monthSel()}</div>
+  <h1>A ${m0(tb)} monthly budget, ${m0(Math.abs(tb-ts))} ${tb-ts>=0?'still free':'over'} in ${monthName(k).split(' ')[0]}</h1>
+  <p class="sub">Set a monthly amount for each category. The average column uses the ${av.n||'previous'} full month${av.n===1?'':'s'} before ${monthName(k)}${av.n?'':' (none loaded yet)'}.</p>
+  <div class="toolbar"><button data-a="useavg"${av.n?'':' disabled'}>Set every budget to its ${av.n}-month average</button></div>
+  <div class="card"><table class="stack"><thead><tr><th>Category</th><th class="num">Budget a month</th><th class="num">Spent</th><th class="num">Left</th><th class="num">Average</th></tr></thead><tbody>
+  ${ex.map(c=>{const sp=st.by[c.id]||0,l=(+c.budget||0)-sp;return`<tr><td>${esc(c.name)}</td><td class="num"><input class="bud" type="number" min="0" step="10" inputmode="decimal" value="${+c.budget||0}" data-c="bud" data-id="${c.id}" aria-label="${esc(c.name)} budget"></td><td class="num">${m0(sp)}</td><td class="num ${l<0?'red':''}">${m0(l)}</td><td class="num mute">${av.n?m0(av.by[c.id]||0):'–'}</td></tr>`}).join('')}
+  </tbody><tfoot><tr><td>Total</td><td class="num">${m0(tb)}</td><td class="num">${m0(ts)}</td><td class="num ${tb-ts<0?'red':''}">${m0(tb-ts)}</td><td class="num mute">${av.n?m0(sum(ex.map(c=>av.by[c.id]||0))):'–'}</td></tr></tfoot></table></div>
+  ${st.by['']>0?`<p class="mute">Plus ${m0(st.by[''])} uncategorised spending. <button class="link" data-a="showunc">Categorise it</button></p>`:''}`;
+};
+V.import=()=>{
+  const p=U.pending;
+  if(p){
+    const opts=sel=>`<option value="-1">(none)</option>`+Array.from({length:p.n},(_,i)=>`<option value="${i}"${i===sel?' selected':''}>Column ${i+1}${p.hasHeader&&p.rows[0][i]?': '+esc(p.rows[0][i]):` (e.g. ${esc((p.rows[p.hasHeader?1:0]||[])[i]||'').slice(0,22)})`}</option>`).join('');
+    const {out,bad}=buildRows(p);
+    return `<h1>Check the columns in ${esc(p.name)}</h1><p class="sub">Tally guessed which column is which. Fix anything that looks wrong in the preview, then import.</p>
+    <div class="panel"><div class="grid2">
+      <label class="f">Account name<input data-c="pacct" value="${esc(p.acct)}" list="accts"><datalist id="accts">${accounts().map(a=>`<option value="${esc(a)}">`).join('')}</datalist></label>
+      <label class="f">Date<select data-c="pmap" data-f="date">${opts(p.map.date)}</select></label>
+      <label class="f">Description<select data-c="pmap" data-f="desc">${opts(p.map.desc)}</select></label>
+      <label class="f">Amount (signed)<select data-c="pmap" data-f="amt">${opts(p.map.amt)}</select></label>
+      <label class="f">Or debit column<select data-c="pmap" data-f="debit">${opts(p.map.debit)}</select></label>
+      <label class="f">And credit column<select data-c="pmap" data-f="credit">${opts(p.map.credit)}</select></label>
+      <label class="f">Date format<select data-c="pfmt"><option value="dmy"${p.fmt==='dmy'?' selected':''}>Day/month/year</option><option value="mdy"${p.fmt==='mdy'?' selected':''}>Month/day/year</option></select></label>
+    </div>
+    <label class="chk"><input type="checkbox" data-c="phead"${p.hasHeader?' checked':''}> First row is column headings</label>
+    <label class="chk"><input type="checkbox" data-c="pinv"${p.invert?' checked':''}> Flip signs (spending shows as positive in this file)</label></div>
+    <h2>Preview</h2><p class="mute">${out.length} transactions ready${bad?`, ${bad} rows skipped (no valid date or amount)`:''}. Spending should be negative.</p>
+    <div class="scroll"><table><thead><tr><th>Date</th><th>Description</th><th class="num">Amount</th></tr></thead><tbody>${out.slice(0,8).map(t=>`<tr><td style="white-space:nowrap">${dayLabel(t.date)}</td><td>${esc(t.desc)}</td><td class="num">${amtCell(t.amt)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="toolbar" style="margin-top:18px"><button class="pri" data-a="pcommit"${out.length?'':' disabled'}>Import ${out.length} transactions</button><button data-a="pcancel">Skip this file</button>${U.queue.length?`<span class="mute">${U.queue.length} more file${U.queue.length>1?'s':''} waiting</span>`:''}</div>`;
+  }
+  return `<h1>Load bank statements</h1><p class="sub">Download a CSV (or OFX/QFX) export from your bank's internet banking and drop it here. Load two or three months so recurring payments can be spotted. Loading the same statement twice is safe: rows already in Tally are skipped.</p>
+  <label class="drop" id="drop"><h2>Drop statement files here</h2><p class="mute">or choose files: .csv, .ofx, .qfx, or a Tally backup (.json)</p><input type="file" multiple accept=".csv,.ofx,.qfx,.txt,.json" data-c="files" style="max-width:260px"></label>
+  <div class="split"><div class="card"><h2>Where to find the export</h2><ul>
+    <li><b>CommBank</b>: NetBank, open the account, then Export and choose CSV. The file has no headings; Tally works the columns out.</li>
+    <li><b>NAB, ANZ, Westpac, ING, Macquarie</b>: look for Export or Download transactions on the account page and pick CSV.</li>
+    <li>Credit cards work the same way. Give each file its own account name.</li></ul></div>
+  <div class="card"><h2>Why there's no bank login</h2><p>You're right to be wary. Typing your bank password into an app (screen scraping) breaks most banks' terms and can void fraud protection. The safe way in Australia is Open Banking under the Consumer Data Right: you approve read-only access in your bank's own app, and you can revoke it at any time. That has to go through an accredited data recipient such as Basiq, and it needs a server, so this version sticks to files that never leave your browser.</p></div></div>`;
+};
+V.rules=()=>`<h1>Settings</h1><p class="sub">Sync between your phones, bank rules, categories and backups.</p>
+  <div class="card"><h2>Sync between phones with Google Drive</h2>
+  <p class="mute" style="margin-top:-6px">${SY.on?(syncState==='ok'?`Connected. Last synced ${new Date(SY.last).toLocaleString('en-AU',{weekday:'short',hour:'numeric',minute:'2-digit'})}. Changes upload a couple of seconds after you make them, and the other phone picks them up when it's opened.`:syncState==='busy'?'Syncing now…':syncState==='err'?`<span class="red">${esc(syncMsg)}</span>`:'Connected. Google sign-in lasts about an hour, so tap sync when you open Tally.'):'Not connected. Sign in with your shared Gmail on both phones and they share one budget, saved as tally-data.json in that Google Drive.'}</p>
+  ${GOOGLE_CLIENT_ID?'':`<label class="f" style="margin:12px 0">Google OAuth client ID<input id="cid" value="${esc(SY.cid||'')}" placeholder="123456-abc.apps.googleusercontent.com" autocomplete="off" spellcheck="false"></label>`}
+  <div class="toolbar" style="margin:0"><button class="pri" data-a="connect">${SY.on?'Sync now':'Connect Google Drive'}</button>${SY.on?'<button data-a="disconnect">Disconnect this phone</button>':''}</div></div>
+  <p class="sub" style="margin-top:22px">Rules run top to bottom; the first match sets the category. Separate words with |. Rules you add from Activity go to the top.</p>
+  <div class="split"><div class="card"><h2>Bank rules</h2>
+  <div class="toolbar"><input id="rmatch" placeholder="e.g. BUNNINGS|MITRE 10" aria-label="Words to match" style="flex:1 1 200px"><select id="rcat" aria-label="Category">${catOpts('','Choose category')}</select><button class="pri" data-a="addrule">Add rule</button></div>
+  <details><summary class="btn sm" style="margin-bottom:10px">Show all ${S.rules.length} rules</summary><table class="stack"><thead><tr><th>If description contains</th><th>Category</th><th></th></tr></thead><tbody>${S.rules.map(r=>`<tr><td><code>${esc(r.match)}</code></td><td>${esc(catName(r.cat))}</td><td><button class="link" data-a="delrule" data-id="${r.id}">Remove</button></td></tr>`).join('')}</tbody></table></details>
+  <div class="toolbar" style="margin-top:14px"><button data-a="reapply">Re-run rules on everything</button><span class="mute">Categories you picked by hand are kept.</span></div></div>
+  <div><div class="card"><h2>Categories</h2><div class="toolbar"><input id="cname" placeholder="New category" aria-label="New category name" style="flex:1 1 160px"><select id="ctype" aria-label="Type"><option value="expense">Spending</option><option value="income">Income</option><option value="transfer">Transfer</option></select><button class="pri" data-a="addcat">Add</button></div>
+  <details><summary class="btn sm" style="margin-bottom:10px">Show all ${S.cats.length} categories</summary><table class="stack"><thead><tr><th>Category</th><th>Type</th><th class="num">Used</th><th></th></tr></thead><tbody>${S.cats.map(c=>`<tr><td>${esc(c.name)}</td><td>${c.type==='expense'?'Spending':c.type==='income'?'Income':'Transfer'}</td><td class="num">${S.txns.filter(t=>t.cat===c.id).length}</td><td><button class="link" data-a="delcat" data-id="${c.id}">Remove</button></td></tr>`).join('')}</tbody></table></details>
+  </div><div class="card"><h2>Your data</h2><p>Everything is saved on this phone${SY.on?' and in your Google Drive':' only'}${storeOK?'':' (<b class="red">this browser is blocking storage, so changes will be lost when you close the page; take a backup</b>)'}. Take a backup now and then, and to move Tally to another computer.</p>
+  <div class="toolbar"><button data-a="dl">Download backup</button><button data-a="copy">Copy backup</button><button data-a="sample">Load sample data</button><button data-a="erase" style="color:var(--red)">Erase all transactions</button></div>
+  <label class="f">Restore: paste a backup here, or drop the .json file on the Import page<textarea id="paste" placeholder='{"v":1,...}'></textarea></label><p style="margin-bottom:0"><button data-a="restore">Restore from pasted backup</button></p></div></div></div>`;
+
+/* ---------- Google Drive sync ---------- */
+const GOOGLE_CLIENT_ID=''; // optional: paste your OAuth client ID here so phones don't need to enter it
+const SCOPE='https://www.googleapis.com/auth/drive.file',FNAME='tally-data.json',D='https://www.googleapis.com/drive/v3',UP='https://www.googleapis.com/upload/drive/v3';
+const SK='tally-sync';let SY={};try{SY=JSON.parse(localStorage.getItem(SK)||'{}')||{}}catch(e){}
+const saveSY=()=>{try{localStorage.setItem(SK,JSON.stringify(SY))}catch(e){}};
+const cid=()=>GOOGLE_CLIENT_ID||SY.cid||'';
+let tok=null,tokExp=0,tc=null,tcReady=false,syncing=false,again=false,dirty=false,syncState=SY.on?'need':'',syncMsg='',stT=null;
+const tokOK=()=>tok&&Date.now()<tokExp;
+function clean(s){return{...s,txns:s.txns.filter(t=>!t.sample)}}
+function merge(L,R){
+  const del=new Set([...(L.del||[]),...(R.del||[])]);
+  const mix=(a=[],b=[])=>{const m=new Map();for(const x of b)m.set(x.id,x);for(const x of a){const y=m.get(x.id);if(!y||(x.mt||0)>=(y.mt||0))m.set(x.id,x)}return[...m.values()].filter(x=>!del.has(x.id))};
+  const order=(arr,pref=[])=>{const ix=new Map(pref.map((x,i)=>[x.id,i]));return arr.sort((a,b)=>(ix.has(a.id)?ix.get(a.id):1e9)-(ix.has(b.id)?ix.get(b.id):1e9))};
+  const lt=(L.txns||[]).filter(t=>!t.sample),rt=R.txns||[];
+  let tx=mix(lt,rt);
+  // the same statement imported on both phones: keep one copy of each real row
+  const cnt=(arr)=>{const c=new Map();arr.forEach(t=>{const k=t.acct+'#'+tkey(t);c.set(k,(c.get(k)||0)+1)});return c};
+  const cl=cnt(lt.filter(t=>!del.has(t.id))),cr=cnt(rt.filter(t=>!del.has(t.id))),grp=new Map();
+  tx.forEach(t=>{const k=t.acct+'#'+tkey(t);if(!grp.has(k))grp.set(k,[]);grp.get(k).push(t)});
+  const drop=new Set();
+  for(const [k,g] of grp){const keep=Math.max(cl.get(k)||0,cr.get(k)||0);if(g.length>keep){g.sort((a,b)=>(b.manual?1:0)-(a.manual?1:0)||(a.id<b.id?-1:1));g.slice(keep).forEach(t=>{drop.add(t.id);del.add(t.id)})}}
+  tx=tx.filter(t=>!drop.has(t.id)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  return{...R,...L,v:1,txns:tx,rules:order(mix(L.rules,R.rules),L.rules),cats:order(mix(L.cats,R.cats),L.cats),recur:{...(R.recur||{}),...(L.recur||{})},del:[...del].slice(-20000)};
+}
+function loadGIS(){return new Promise((res,rej)=>{if(window.google?.accounts?.oauth2)return res();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=()=>res();s.onerror=()=>rej(new Error("Couldn't load Google sign-in. Drive sync only works when Tally is opened from your own web address."));document.head.appendChild(s)})}
+async function initGIS(){
+  if(!cid())return;
+  try{await loadGIS();
+    tc=google.accounts.oauth2.initTokenClient({client_id:cid(),scope:SCOPE,
+      callback:r=>{if(r.error){setSync('err',r.error_description||r.error);return}tok=r.access_token;tokExp=Date.now()+((+r.expires_in||3600)-120)*1000;SY.on=true;saveSY();syncNow()},
+      error_callback:e=>setSync(SY.on?'need':'',e&&e.type==='popup_closed'?'Sign-in was closed':'Sign-in failed, try again')});
+    tcReady=true;
+  }catch(e){setSync('err',e.message)}
+}
+function signIn(){if(!cid()){go('rules');toast('Add your Google client ID first.');return}if(!tcReady){initGIS().then(()=>tcReady&&toast('Ready. Tap sync again to sign in.'));return}tc.requestAccessToken({prompt:SY.on?'':'consent'})}
+async function api(u,o={}){const r=await fetch(u,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});if(!r.ok){const e=new Error('Google Drive said '+r.status);e.status=r.status;throw e}return r}
+function schedSync(){if(!tokOK())return;clearTimeout(stT);stT=setTimeout(syncNow,2000)}
+async function syncNow(){
+  if(!tokOK()){tok=null;if(SY.on)setSync('need');return}
+  if(syncing){again=true;return}
+  syncing=true;setSync('busy');
+  try{
+    if(S.txns.length&&S.txns.every(t=>t.sample)){S.txns=[];S.recur={};persist()}
+    let id=SY.fid,m=null;
+    if(id){try{m=await(await api(`${D}/files/${id}?fields=id,modifiedTime,trashed`)).json();if(m.trashed){id=null;m=null}}catch(e){if(e.status===404){id=null}else throw e}}
+    if(!id){const l=await(await api(`${D}/files?q=${encodeURIComponent(`name='${FNAME}' and trashed=false`)}&orderBy=modifiedTime%20desc&fields=files(id,modifiedTime)&spaces=drive`)).json();if(l.files&&l.files.length){m=l.files[0];id=m.id}}
+    let push=dirty||!id||!!SY.force;
+    if(id&&!SY.force&&m.modifiedTime!==SY.rmt){
+      const R=await(await api(`${D}/files/${id}?alt=media`)).json();
+      if(R&&Array.isArray(R.txns)){const before=JSON.stringify(clean(S));S=merge(S,R);persist();if(JSON.stringify(clean(S))!==before){U.month=null;render()}push=JSON.stringify(clean(S))!==JSON.stringify(R)}
+    }
+    if(push){
+      dirty=false;const body=JSON.stringify(clean(S));let r;
+      if(id)r=await(await api(`${UP}/files/${id}?uploadType=media&fields=id,modifiedTime`,{method:'PATCH',headers:{'Content-Type':'application/json'},body})).json();
+      else{const b='tally'+Date.now();r=await(await api(`${UP}/files?uploadType=multipart&fields=id,modifiedTime`,{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body:`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:FNAME,mimeType:'application/json',description:'Tally family budget data. Shared by your phones; do not edit by hand.'})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${b}--`})).json()}
+      id=r.id;m=r;
+    }
+    SY.fid=id;SY.rmt=m.modifiedTime;SY.force=false;SY.last=Date.now();saveSY();setSync('ok');
+  }catch(e){if(e.status===401||e.status===403&&!tokOK()){tok=null;setSync('need')}else setSync('err',e.message||'Sync failed')}
+  finally{syncing=false;if(again){again=false;syncNow()}}
+}
+function setSync(st,msg){syncState=st;syncMsg=msg||'';pill();if(U.view==='rules'&&!document.activeElement?.matches('input,textarea'))render()}
+function pill(){
+  const t={need:'Tap to sync',busy:'Syncing…',ok:'Synced '+(SY.last?new Date(SY.last).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}):''),err:'Sync problem · retry'}[syncState];
+  document.querySelectorAll('.syncpill').forEach(b=>{b.hidden=!t;b.textContent=t||'';b.className='syncpill sm'+(syncState==='need'||syncState==='err'?' pri':'')});
+}
+addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&tokOK())syncNow()});
+setInterval(()=>{if(document.visibilityState==='visible'&&tokOK()&&!syncing)syncNow()},60000);
+
+/* ---------- render + routing ---------- */
+function render(){setTimeout(pill);
+  const h=location.hash.slice(1);U.view=V[h]?h:'overview';
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+U.view));
+  $('#main').innerHTML=V[U.view]();
+}
+addEventListener('hashchange',()=>{render();scrollTo(0,0)});
+const go=v=>{if(location.hash==='#'+v)render();else location.hash=v};
+
+/* ---------- actions ---------- */
+const ACT={
+  myes(){$('#modal').classList.remove('on');const f=mcb;mcb=null;f&&f()},
+  mno(){$('#modal').classList.remove('on');mcb=null},
+  pickmonth(el,e){e.preventDefault();U.month=el.dataset.k;render()},
+  clearsample(){ask('Remove the sample data and start with an empty budget?','Start empty',()=>{S.txns=S.txns.filter(t=>!t.sample);S.recur={};save();render()})},
+  showunc(){U.fcat='__none';U.fmon=curMonth();U.q='';U.limit=200;go('transactions')},
+  more(){U.limit+=200;$('#txwrap').innerHTML=txTable()},
+  del(el){const t=S.txns.find(x=>x.id===el.dataset.id);if(!t)return;ask(`Delete "${t.desc}" (${m2(t.amt)}) on ${dayLabel(t.date)}?`,'Delete',()=>{S.txns=S.txns.filter(x=>x!==t);(S.del=S.del||[]).push(t.id);save();$('#txwrap').innerHTML=txTable()})},
+  rc(el){S.recur[el.dataset.k]=el.dataset.s;if(el.dataset.s==='detected')delete S.recur[el.dataset.k];save();render()},
+  rshow(el){U.rshow=el.dataset.v;render()},
+  useavg(){const av=avg3(curMonth());S.cats.forEach(c=>{if(c.type==='expense'){c.budget=Math.ceil((av.by[c.id]||0)/10)*10;c.mt=Date.now()}});save();render();toast('Budgets set from your recent averages.')},
+  pcommit(){const p=U.pending;commitImport(buildRows(p).out,p.acct.trim()||'Account');U.pending=null;nextFile()},
+  pcancel(){U.pending=null;nextFile()},
+  addrule(){const m=$('#rmatch').value.trim(),c=$('#rcat').value;if(!m||!c){toast('Enter some words and pick a category.');return}S.rules.unshift({id:uid(),match:m,cat:c});const n=applyRules();save();render();toast(`Rule added. ${n} transaction${n===1?'':'s'} recategorised.`)},
+  delrule(el){S.rules=S.rules.filter(r=>r.id!==el.dataset.id);(S.del=S.del||[]).push(el.dataset.id);save();render()},
+  reapply(){const n=applyRules();save();render();toast(`${n} transaction${n===1?'':'s'} changed.`)},
+  addcat(){const n=$('#cname').value.trim();if(!n)return;S.cats.push({id:'c'+uid(),name:n,type:$('#ctype').value,budget:0});save();render()},
+  delcat(el){const c=C(el.dataset.id),used=S.txns.filter(t=>t.cat===c.id).length;ask(`Remove "${c.name}"?${used?` ${used} transactions will become uncategorised.`:''} Rules using it are removed too.`,'Remove',()=>{S.del=S.del||[];S.del.push(c.id,...S.rules.filter(r=>r.cat===c.id).map(r=>r.id));S.cats=S.cats.filter(x=>x!==c);S.txns.forEach(t=>{if(t.cat===c.id){t.cat='';t.manual=false;t.mt=Date.now()}});S.rules=S.rules.filter(r=>r.cat!==c.id);save();render()})},
+  dl(){try{const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tally-backup-'+TODAY+'.json';document.body.appendChild(a);a.click();a.remove();toast('Backup downloaded. If nothing appeared, use Copy backup instead.')}catch(e){toast('Download blocked here. Use Copy backup instead.')}},
+  copy(){navigator.clipboard.writeText(JSON.stringify(S)).then(()=>toast('Backup copied. Paste it into a text file and keep it somewhere safe.'),()=>{$('#paste').value=JSON.stringify(S);$('#paste').select();toast('Copy was blocked, so the backup is in the box below. Select all and copy it.')})},
+  sample(){if(SY.on){toast('Disconnect sync on this phone before loading sample data.');return}ask('Replace everything with sample data? Take a backup first if you have your own data loaded.','Load sample',()=>{S=fresh(true);U.month=null;save();go('overview')})},
+  erase(){ask(SY.on?'Erase every transaction on both phones? This cannot be undone.':'Erase every transaction, rule and budget in this browser? This cannot be undone.','Erase everything',()=>{if(SY.on){S.del=[...(S.del||[]),...S.txns.map(t=>t.id)];S.txns=[];S.recur={}}else S=fresh(false);U.month=null;save();go('import')})},
+  restore(){restoreFrom($('#paste').value)},
+  sync(){if(tokOK())syncNow();else signIn()},
+  connect(){const i=$('#cid');if(i){const v=i.value.trim();if(!v){toast('Paste your Google client ID first.');return}if(v!==SY.cid){SY.cid=v;saveSY();tcReady=false;initGIS().then(()=>{if(tcReady){toast('Ready. Tap Connect again to sign in.');render()}});return}}if(tokOK())syncNow();else signIn()},
+  disconnect(){ask('Stop syncing on this phone? Your data stays here and in Google Drive.','Disconnect',()=>{try{tok&&google.accounts.oauth2.revoke(tok,()=>{})}catch(e){}tok=null;SY={cid:SY.cid};saveSY();setSync('');render()})}
+};
+function applyRules(){let n=0;for(const t of S.txns){if(t.manual)continue;const c=autoCat(t,S.rules);if(c!==t.cat){t.cat=c;t.mt=Date.now();n++}}return n}
+function restoreFrom(txt){try{const s=JSON.parse(txt);if(!s||!Array.isArray(s.txns)||!Array.isArray(s.cats))throw 0;ask(`Replace what's here with this backup (${s.txns.length} transactions)?`,'Restore',()=>{S=s;S.recur=S.recur||{};S.rules=S.rules||[];if(SY.on){SY.force=true;saveSY()}U.month=null;save();go('overview');toast('Backup restored.')})}catch(e){toast("That doesn't look like a Tally backup.")}}
+const CHG={
+  month(el){U.month=el.value;render()},
+  fcat(el){U.fcat=el.value;U.limit=200;$('#txwrap').innerHTML=txTable()},
+  fmon(el){U.fmon=el.value;U.limit=200;$('#txwrap').innerHTML=txTable()},
+  facct(el){U.facct=el.value;U.limit=200;$('#txwrap').innerHTML=txTable()},
+  tcat(el){const t=S.txns.find(x=>x.id===el.dataset.id);if(!t)return;t.cat=el.value;t.manual=true;t.mt=Date.now();save();
+    const m=merch(t.desc),others=S.txns.filter(x=>x!==t&&!x.manual&&merch(x.desc)===m&&x.cat!==t.cat).length;
+    if(el.value)toast(`Always file "${title(m)}" as ${catName(el.value)}?${others?` (${others} others)`:''}`,'Make it a rule',()=>{S.rules.unshift({id:uid(),match:m,cat:t.cat});const n=applyRules();save();$('#txwrap')&&($('#txwrap').innerHTML=txTable());toast(`Rule saved. ${n} more transaction${n===1?'':'s'} updated.`)})},
+  bud(el){const c=C(el.dataset.id);c.budget=Math.max(0,+el.value||0);c.mt=Date.now();save();render()},
+  files(el){handleFiles(el.files)},
+  pacct(el){U.pending.acct=el.value},
+  pmap(el){const f=el.dataset.f,v=+el.value;U.pending.map[f]=v;if(f==='amt'&&v>=0){U.pending.map.debit=-1;U.pending.map.credit=-1}if((f==='debit'||f==='credit')&&v>=0)U.pending.map.amt=-1;render()},
+  pfmt(el){U.pending.fmt=el.value;render()},
+  phead(el){U.pending.hasHeader=el.checked;render()},
+  pinv(el){U.pending.invert=el.checked;render()}
+};
+let qt;const INP={q(el){U.q=el.value;U.limit=200;clearTimeout(qt);qt=setTimeout(()=>{$('#txwrap').innerHTML=txTable()},150)}};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&ACT[el.dataset.a])ACT[el.dataset.a](el,e)});
+document.addEventListener('change',e=>{const el=e.target.closest('[data-c]');if(el&&CHG[el.dataset.c])CHG[el.dataset.c](el,e)});
+document.addEventListener('input',e=>{const el=e.target.closest('[data-i]');if(el&&INP[el.dataset.i])INP[el.dataset.i](el)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal').classList.contains('on'))ACT.mno()});
+
+/* ---------- files ---------- */
+function handleFiles(fl){U.queue.push(...Array.from(fl||[]));if(!U.pending)nextFile()}
+async function nextFile(){
+  const f=U.queue.shift();
+  if(!f){go('import');return}
+  let text='';try{text=await f.text()}catch(e){toast(`Couldn't read ${f.name}.`);return nextFile()}
+  if(/\.json$/i.test(f.name)||/^\s*\{/.test(text)){restoreFrom(text);return nextFile()}
+  if(/<OFX>|OFXHEADER|<STMTTRN>/i.test(text)){const l=parseOFX(text);if(!l.length)toast(`No transactions found in ${f.name}.`);else commitImport(l,title(f.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ')).slice(0,32));return nextFile()}
+  const rows=parseCSV(text);
+  if(rows.length<1){toast(`${f.name} looks empty.`);return nextFile()}
+  U.pending=autoMap(rows,f.name);go('import');
+}
+addEventListener('dragover',e=>{e.preventDefault();$('#drop')?.classList.add('over')});
+addEventListener('dragleave',e=>{if(!e.relatedTarget)$('#drop')?.classList.remove('over')});
+addEventListener('drop',e=>{e.preventDefault();$('#drop')?.classList.remove('over');if(e.dataTransfer?.files?.length)handleFiles(e.dataTransfer.files)});
+
+persist();render();pill();if(cid())initGIS();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body></html>
