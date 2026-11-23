@@ -28,7 +28,7 @@ main{max-width:1180px;width:100%;margin:0 auto;padding:calc(clamp(20px,3vw,40px)
 .syncpill{margin:0 10px}.syncpill[hidden]{display:none}.mtop .syncpill{margin:0 0 0 auto}
 @media(max-width:760px){body{grid-template-columns:1fr}.side{position:fixed;inset:auto 0 0 0;height:auto;z-index:15;padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--rule);gap:0}.side .logo,.side .safe,.side .syncpill{display:none!important}nav{flex-direction:row;justify-content:space-around;gap:0}nav a{flex:1 1 0;flex-direction:column;gap:2px;font-size:11px;padding:6px 2px;text-align:center}nav a.on{background:none}nav a.on span{color:var(--acc)}main{padding-bottom:110px}.mtop{display:flex!important}}
 .mtop{display:none;align-items:center;gap:10px;font-weight:800;font-size:20px;margin-bottom:14px}.mtop i{width:30px;height:30px;border-radius:10px;background:var(--acc);color:var(--onacc);display:grid;place-items:center;font-style:normal;font-size:16px}
-h1{font-weight:800;font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-.03em;margin:0 0 8px;text-wrap:balance}
+h1{overflow-wrap:anywhere;font-weight:800;font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-.03em;margin:0 0 8px;text-wrap:balance}
 h2{font-weight:700;font-size:18px;line-height:1.3;margin:0 0 14px;letter-spacing:-.01em}
 .sub{color:var(--mute);margin:0 0 22px;max-width:70ch}
 .card{background:var(--card);border-radius:var(--r);padding:clamp(16px,2.2vw,24px);margin-bottom:18px}
@@ -172,7 +172,7 @@ const DEF_CATS=[['salary','Salary & wages','income',0],['otherinc','Other income
 const DEF_RULES=[['SALARY|PAYROLL|WAGES','salary'],['TRANSFER|TFR|SAVINGS|INTERNAL','transfer'],['HOME LOAN|MORTGAGE|LOAN REPAYMENT|RENT','housing'],['WOOLWORTHS|COLES|ALDI|IGA|HARRIS FARM|COSTCO|FOODWORKS','groceries'],['AGL|ORIGIN|ENERGYAUSTRALIA|RED ENERGY|ALINTA|HUNTER WATER|SYDNEY WATER|JEMENA|ENGIE|SIMPLY ENERGY','utilities'],['TELSTRA|OPTUS|VODAFONE|TPG|AUSSIE BROADBAND|BELONG|IINET|BOOST|AMAYSIM','phone'],['NRMA|AAMI|BUDGET DIRECT|ALLIANZ|YOUI|SUNCORP|GIO|QBE|MEDIBANK|BUPA|NIB|HCF|AHM','insurance'],['AMPOL|CALTEX|BP|SHELL|7-ELEVEN|UNITED PETROLEUM|METRO PETROLEUM|LINKT|TRANSPORT FOR NSW|OPAL|DIDI','transport'],['GOODSTART|CHILDCARE|EARLY LEARNING|OSHC|SCHOOL|UNIFORM','childcare'],['SWIM|SWIMSTARS|DANCE|FOOTBALL|SOCCER|NETBALL|GYMNASTICS|MUSIC LESSON','kids'],['CHEMIST|PHARMACY|PRICELINE|MEDICAL|DENTAL|DOCTOR|PHYSIO|PATHOLOGY','health'],['UBER EATS|MENULOG|DOORDASH|MCDONALDS|KFC|HUNGRY JACKS|DOMINOS|CAFE|PIZZA|SUSHI|RESTAURANT|BAKERY','dining'],['NETFLIX|SPOTIFY|STAN|DISNEY|BINGE|KAYO|YOUTUBE|APPLE.COM|GOOGLE ONE|AMAZON PRIME|PARAMOUNT|ICLOUD','subs'],['KMART|BIG W|TARGET|BUNNINGS|MYER|DAVID JONES|IKEA|OFFICEWORKS|AMAZON|JB HI-FI|HARVEY NORMAN','shopping'],['REGO|SERVICE NSW|MECHANIC|TYRES|GREEN SLIP','car'],['RATES|COUNCIL','rates'],['CINEMA|CINEMAS|HOYTS|TICKETEK|TICKETMASTER|STEAM|PLAYSTATION','fun'],['GIFT|TOYWORLD','gifts']];
 
 /* ---------- merchant + rules ---------- */
-const NOISE=/\b(VISA|DEBIT|CREDIT|PURCHASE|EFTPOS|POS|CARD|DIRECT|DD|BPAY|OSKO|NPP|PAYMENT|PAYMENTS|TO|FROM|AUTHORISATION|PENDING|VALUE|DATE|AUD|AU|AUS|AUSTRALIA|NSW|VIC|QLD|SA|WA|TAS|ACT|NT|REF|RECEIPT|INTERNET|TRANSFER|TFR|PTY|LTD|THE|WWW|COM|NET|ORG|INV|NO|SP|SQ)\b/g;
+const NOISE=/\b(EFT|IB|NPBS|ING|RECEIPT|VISA|DEBIT|CREDIT|PURCHASE|EFTPOS|POS|CARD|DIRECT|DD|BPAY|OSKO|NPP|PAYMENT|PAYMENTS|TO|FROM|AUTHORISATION|PENDING|VALUE|DATE|AUD|AU|AUS|AUSTRALIA|NSW|VIC|QLD|SA|WA|TAS|ACT|NT|REF|RECEIPT|INTERNET|TRANSFER|TFR|PTY|LTD|THE|WWW|COM|NET|ORG|INV|NO|SP|SQ)\b/g;
 function merch(d){const s=String(d).toUpperCase().replace(/[^A-Z0-9& ]+/g,' ').replace(/\b\w*\d\w*\b/g,' ').replace(NOISE,' ').replace(/\s+/g,' ').trim();const w=s.split(' ').filter(x=>x.length>1);return w.slice(0,3).join(' ')||String(d).toUpperCase().trim().slice(0,24)}
 const reCache=new Map();
 function ruleRe(m){if(!reCache.has(m)){const alts=m.split('|').map(x=>x.trim().toUpperCase()).filter(Boolean).map(x=>x.replace(/[.*+?^${}()[\]\\]/g,'\\$&'));reCache.set(m,alts.length?new RegExp('(^|[^A-Z0-9])('+alts.join('|')+')($|[^A-Z0-9])'):null)}return reCache.get(m)}
@@ -222,6 +222,7 @@ let storeOK=true;
 function persist(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){storeOK=false}}
 function save(){persist();dirty=true;schedSync()}
 let S=load()||fresh(true);
+if(!(S.rv>=2)){S.rules.unshift({id:'u2a',match:'IMB MORTG|MORTG',cat:'housing'},{id:'u2b',match:'NPBS TO|IB TRANSFER|CHRISTMAS CLUB|SAVINGS:TFR|TFR',cat:'transfer'},{id:'u2c',match:'SALARIES',cat:'salary'});S.rv=2}
 const U={view:'overview',month:null,q:'',fcat:'',facct:'',fmon:'',limit:200,pending:null,queue:[],rshow:'all'};
 const C=id=>S.cats.find(c=>c.id===id);
 const typeOf=t=>t.cat?(C(t.cat)?.type||'expense'):(t.amt<0?'expense':'income');
@@ -355,6 +356,100 @@ function commitImport(list,acct){
   toast(`${acct}: imported ${added} transaction${added===1?'':'s'}${dup?`, skipped ${dup} already loaded`:''}${cleared?' (sample data removed)':''}.`);
 }
 
+/* ---------- PDF statements ---------- */
+/* PDF statement reader: rebuilds text rows from pdf.js positions, finds rows that start with a date,
+   and uses each row's running balance to decide whether the amount is money in or out. */
+async function readStatementPDF(doc){
+  const MONS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const p2=n=>String(n).padStart(2,'0');
+  const MONEY=/^\(?-?\$?-?\d{1,3}(?:,\d{3})*\.\d{2}\)?(?:\s?(?:CR|DR|-))?$/i;
+  const DATE_START=/^(\d{1,2}\/\d{1,2}\/\d{2,4}|\d{1,2}[ -](?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*(?:[ -]\d{2,4})?)\b/i;
+  const money=s=>{let t=s.trim(),neg=/^\(.*\)$/.test(t)||/-/.test(t)||/DR$/i.test(t);t=t.replace(/[^\d.]/g,'');const v=parseFloat(t);return neg?-v:v};
+  const lines=[];let all='';
+  for(let pn=1;pn<=doc.numPages;pn++){
+    const page=await doc.getPage(pn),tc=await page.getTextContent();
+    const items=tc.items.filter(i=>i.str&&i.str.trim()).map(i=>({x:i.transform[4],y:i.transform[5],w:i.width||0,s:i.str}));
+    items.sort((a,b)=>b.y-a.y||a.x-b.x);
+    const rows=[];
+    for(const it of items){let r=rows.find(r=>Math.abs(r.y-it.y)<2.5);if(!r){r={y:it.y,items:[]};rows.push(r)}r.items.push(it)}
+    rows.sort((a,b)=>b.y-a.y);
+    for(const r of rows){
+      r.items.sort((a,b)=>a.x-b.x);
+      const cells=[];
+      for(const it of r.items){const c=cells[cells.length-1];if(c&&it.x-c.x2<4&&it.x-c.x2>-2){c.t+=(it.x-c.x2>0.8&&!c.t.endsWith(' ')&&!it.s.startsWith(' ')?' ':'')+it.s;c.x2=Math.max(c.x2,it.x+it.w)}else cells.push({x:it.x,x2:it.x+it.w,t:it.s})}
+      cells.forEach(c=>c.t=c.t.replace(/\s+/g,' ').trim());
+      const text=cells.map(c=>c.t).join('  ');
+      lines.push({page:pn,y:r.y,cells:cells.filter(c=>c.t),text});all+=text+'\n';
+    }
+  }
+  // statement year range, for dates printed without a year
+  const yrs=(all.match(/\b20\d{2}\b/g)||[]).map(Number);const endYear=yrs.length?Math.max(...yrs):new Date().getFullYear();
+  const endMonth=(()=>{const m=all.match(/(?:to|-)\s+\d{1,2}[\/ ](\d{1,2}|[A-Za-z]{3,9})[\/ ](20\d{2})/i);if(!m)return 12;return isNaN(+m[1])?MONS[m[1].slice(0,3).toLowerCase()]||12:+m[1]})();
+  const pd=s=>{let x;s=s.trim();
+    if(x=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)){let y=+x[3];if(y<100)y+=2000;return y+'-'+p2(+x[2])+'-'+p2(+x[1])}
+    if(x=s.match(/^(\d{1,2})[ -]([a-z]{3})[a-z]*(?:[ -](\d{2,4}))?$/i)){const m=MONS[x[2].toLowerCase()];if(!m)return null;let y=x[3]?+x[3]:(m>endMonth?endYear-1:endYear);if(y<100)y+=2000;return y+'-'+p2(m)+'-'+p2(+x[1])}
+    return null};
+  // account name hints
+  let bank='';
+  if(/newcastle ?permanent/i.test(all))bank='Newcastle Permanent';else if(/Orange Everyday|ING Bank|Savings Maximiser/.test(all))bank='ING';
+  else if(/commonwealth bank|commbank/i.test(all))bank='CommBank';else if(/westpac/i.test(all))bank='Westpac';else if(/\bANZ\b/.test(all))bank='ANZ';else if(/\bNAB\b|national australia bank/i.test(all))bank='NAB';
+  const product=(all.match(/\b(Orange Everyday|Savings Maximiser|Everyday Account|Everyday|Smart Access|Streamline|Complete Freedom|Classic Banking|Access Advantage|Credit Card)\b/i)||[])[1]||'';
+  const baseAcct=[bank,product].filter(Boolean).join(' ')||'';
+  let acct=baseAcct,hdr=null,prevBal=null,cur=null,openNext=false;const out=[];
+  const finish=()=>{if(!cur)return;let d=cur.head;
+      d=d.replace(/\s*-\s*Receipt\s+\d+/i,'').trim();
+      const extra=cur.cont.map(s=>s.replace(/\bDate\s+\d{1,2}\/\d{1,2}\/\d{2,4}\b/i,'').replace(/\bCard\s+\d{3,}\b/i,'').replace(/\s+/g,' ').trim()).filter(Boolean);
+      const desc=extra.length?extra.join(' ')+(d?' ('+d+')':''):d;
+      out.push({date:cur.date,desc:desc.replace(/\s+/g,' ').trim()||'(no description)',amt:cur.amt,acct:cur.acct,checked:cur.checked});cur=null};
+  for(const L0 of lines){
+    // ignore print-house codes in the left margin that share a row with a transaction
+    const L=hdr&&hdr.x0!=null&&L0.page===hdr.page?{...L0,cells:L0.cells.filter(c=>c.x>=hdr.x0-15)}:L0;
+    if(L!==L0)L.text=L.cells.map(c=>c.t).join('  ');
+    const t=L.text;
+    const an=t.match(/^Account name:\s*(.+)$/i);if(an){finish();acct=(bank?bank+' ':'')+an[1].trim();if(out.length)prevBal=null;continue}
+    if(/^opening (account )?balance/i.test(t)&&!L.cells.some(c=>MONEY.test(c.t))){openNext=true;continue}
+    if(/(debit|money out|withdrawal)/i.test(t)&&/(credit|money in|deposit)/i.test(t)&&/balance/i.test(t)){finish();const f=re=>{const c=L.cells.find(c=>re.test(c.t));return c?(c.x+c.x2)/2:null};hdr={out:f(/debit|money out|withdrawal/i),in:f(/credit|money in|deposit/i),bal:f(/balance/i),x0:L.cells[0].x,page:L.page};continue}
+    if(/^Page \d+|statement continued/i.test(t)){finish();continue}
+    const ob=/^opening (account )?balance/i.test(t)&&L.cells.length>=2&&MONEY.test(L.cells[L.cells.length-1].t);
+    if(ob){finish();prevBal=money(L.cells[L.cells.length-1].t);continue}
+    if(openNext){const ms=L.cells.filter(c=>MONEY.test(c.t));if(ms.length>=2){prevBal=money(ms[0].t);openNext=false;continue}}
+    const dm=hdr&&L.cells[0]&&t.match(DATE_START);
+    const date=dm&&pd(dm[1]);
+    const mc=L.cells.filter(c=>MONEY.test(c.t));
+    if(date&&mc.length){
+      finish();
+      let bal=null,amtC;
+      if(mc.length>=2){bal=money(mc[mc.length-1].t);amtC=mc[mc.length-2]}else{amtC=mc[0];if(hdr&&hdr.bal&&Math.abs((amtC.x+amtC.x2)/2-hdr.bal)<Math.abs((amtC.x+amtC.x2)/2-(hdr.out||0))){continue}}
+      let amt=Math.abs(money(amtC.t)),checked=false;
+      if(prevBal!=null&&bal!=null&&Math.abs(Math.abs(bal-prevBal)-amt)<0.005){amt=Math.round((bal-prevBal)*100)/100;checked=true}
+      else if(/-|DR|\(/i.test(amtC.t))amt=-amt;
+      else if(hdr&&hdr.in!=null&&hdr.out!=null){const cx=(amtC.x+amtC.x2)/2;if(Math.abs(cx-hdr.out)<Math.abs(cx-hdr.in))amt=-amt}
+      if(bal!=null)prevBal=bal;
+      // description: cells after the date(s) and before the amount, skipping card numbers
+      let rest=t.slice(dm[0].length);
+      const descCells=L.cells.filter(c=>c.x>=L.cells[0].x2-1&&c.x2<=amtC.x+1&&c!==L.cells[0]);
+      let head=descCells.map(c=>c.t).join(' ').replace(DATE_START,'').trim();
+      if(!descCells.length)head=rest.replace(amtC.t,'').trim();
+      head=head.replace(/^\d{1,3}\s+(?=\D)/,'').replace(DATE_START,'').replace(/^\d{1,3}\s+(?=\D)/,'').trim();
+      const dx=descCells.length?descCells.find(c=>!/^\d{1,3}$/.test(c.t)&&!DATE_START.test(c.t))?.x??descCells[0].x:L.cells[0].x2;
+      cur={date,amt,acct,checked,head,cont:[],dx,ax:amtC.x,page:L.page};
+      continue;
+    }
+    if(cur&&L.page===cur.page&&!mc.length&&cur.cont.length<3){
+      const c0=L.cells[0];
+      if(c0&&Math.abs(c0.x-cur.dx)<12&&c0.x<cur.ax&&!DATE_START.test(t))cur.cont.push(L.cells.filter(c=>c.x<cur.ax).map(c=>c.t).join(' '));
+      continue;
+    }
+    if(cur&&L.page!==cur.page)finish();
+  }
+  finish();
+  const checked=out.filter(t=>t.checked).length;
+  return{list:out,acct:baseAcct,checked,bank};
+}
+
+
+let pdfjsP=null;
+function loadPDFJS(){if(window.pdfjsLib)return Promise.resolve();if(pdfjsP)return pdfjsP;pdfjsP=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=()=>{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res()};s.onerror=()=>{pdfjsP=null;rej(new Error('Could not load the PDF reader. Check your internet connection and try again.'))};document.head.appendChild(s)});return pdfjsP}
 /* ---------- UI bits ---------- */
 const $=s=>document.querySelector(s);
 let tt;function toast(msg,btn,fn){const t=$('#toast');t.innerHTML='<span>'+esc(msg)+'</span>'+(btn?'<button id="tbtn">'+esc(btn)+'</button>':'');t.classList.add('on');if(btn)$('#tbtn').onclick=()=>{t.classList.remove('on');fn()};clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),btn?9000:4500)}
@@ -447,6 +542,16 @@ V.budget=()=>{
 };
 V.import=()=>{
   const p=U.pending;
+  if(p&&p.kind==='pdf'){
+    const L=p.list,inn=sum(L.filter(t=>t.amt>0).map(t=>t.amt)),out=-sum(L.filter(t=>t.amt<0).map(t=>t.amt)),all=p.checked===L.length,from=L[0].date,to=L[L.length-1].date;
+    return `<h1>${L.length} transactions found in ${esc(p.name)}</h1>
+    <p class="sub">${dayLabel(from)} to ${dayLabel(to)} · money in ${m2(inn)} · money out ${m2(out)}</p>
+    <div class="note${all?'':' warn'}"><p>${all?`All ${L.length} rows match the statement's running balance, so the amounts and in/out directions are right.`:`${p.checked} of ${L.length} rows match the running balance. Check the others in the preview before importing.`}</p></div>
+    <div class="panel">${p.multi?`<p style="margin:0">This statement has ${p.multi.length} accounts: ${p.multi.map(esc).join(', ')}. Each is imported under its own name.</p>`:`<label class="f">Account name<input data-c="pacct" value="${esc(p.acct)}" list="accts"><datalist id="accts">${accounts().map(a=>`<option value="${esc(a)}">`).join('')}</datalist></label>`}</div>
+    <h2>Preview</h2>
+    <div class="card scroll"><table><thead><tr><th>Date</th><th>Description</th><th class="num">Amount</th></tr></thead><tbody>${L.filter(t=>!t.checked).concat(L.filter(t=>t.checked)).slice(0,10).map(t=>`<tr><td style="white-space:nowrap">${dayLabel(t.date)}</td><td>${esc(t.desc)}${t.checked?'':' <span class="badge r">check</span>'}</td><td class="num">${amtCell(t.amt)}</td></tr>`).join('')}</tbody></table>${L.length>10?`<p class="mute" style="margin-bottom:0">and ${L.length-10} more</p>`:''}</div>
+    <div class="toolbar"><button class="pri" data-a="pcommit">Import ${L.length} transactions</button><button data-a="pcancel">Skip this file</button>${U.queue.length?`<span class="mute">${U.queue.length} more file${U.queue.length>1?'s':''} waiting</span>`:''}</div>`;
+  }
   if(p){
     const opts=sel=>`<option value="-1">(none)</option>`+Array.from({length:p.n},(_,i)=>`<option value="${i}"${i===sel?' selected':''}>Column ${i+1}${p.hasHeader&&p.rows[0][i]?': '+esc(p.rows[0][i]):` (e.g. ${esc((p.rows[p.hasHeader?1:0]||[])[i]||'').slice(0,22)})`}</option>`).join('');
     const {out,bad}=buildRows(p);
@@ -466,12 +571,13 @@ V.import=()=>{
     <div class="scroll"><table><thead><tr><th>Date</th><th>Description</th><th class="num">Amount</th></tr></thead><tbody>${out.slice(0,8).map(t=>`<tr><td style="white-space:nowrap">${dayLabel(t.date)}</td><td>${esc(t.desc)}</td><td class="num">${amtCell(t.amt)}</td></tr>`).join('')}</tbody></table></div>
     <div class="toolbar" style="margin-top:18px"><button class="pri" data-a="pcommit"${out.length?'':' disabled'}>Import ${out.length} transactions</button><button data-a="pcancel">Skip this file</button>${U.queue.length?`<span class="mute">${U.queue.length} more file${U.queue.length>1?'s':''} waiting</span>`:''}</div>`;
   }
-  return `<h1>Load bank statements</h1><p class="sub">Download a CSV (or OFX/QFX) export from your bank's internet banking and drop it here. Load two or three months so recurring payments can be spotted. Loading the same statement twice is safe: rows already in Tally are skipped.</p>
-  <label class="drop" id="drop"><h2>Drop statement files here</h2><p class="mute">or choose files: .csv, .ofx, .qfx, or a Tally backup (.json)</p><input type="file" multiple accept=".csv,.ofx,.qfx,.txt,.json" data-c="files" style="max-width:260px"></label>
+  return `<h1>Load bank statements</h1><p class="sub">Drop in PDF statements, or a CSV (or OFX/QFX) export from your bank's internet banking and drop it here. Load two or three months so recurring payments can be spotted. Loading the same statement twice is safe: rows already in Tally are skipped.</p>
+  <label class="drop" id="drop"><h2>Drop statement files here</h2><p class="mute">or choose files: PDF statements, .csv, .ofx, .qfx, or a Tally backup (.json)</p><input type="file" multiple accept=".pdf,.csv,.ofx,.qfx,.txt,.json,application/pdf" data-c="files" style="max-width:260px"></label>
   <div class="split"><div class="card"><h2>Where to find the export</h2><ul>
     <li><b>CommBank</b>: NetBank, open the account, then Export and choose CSV. The file has no headings; Tally works the columns out.</li>
     <li><b>NAB, ANZ, Westpac, ING, Macquarie</b>: look for Export or Download transactions on the account page and pick CSV.</li>
-    <li>Credit cards work the same way. Give each file its own account name.</li></ul></div>
+    <li>Credit cards work the same way. Give each file its own account name.</li>
+    <li><b>PDF statements</b> work too, and are checked against the statement's running balance. Tested on ING Orange Everyday and Newcastle Permanent. Scanned or photographed statements can't be read.</li></ul></div>
   <div class="card"><h2>Why there's no bank login</h2><p>You're right to be wary. Typing your bank password into an app (screen scraping) breaks most banks' terms and can void fraud protection. The safe way in Australia is Open Banking under the Consumer Data Right: you approve read-only access in your bank's own app, and you can revoke it at any time. That has to go through an accredited data recipient such as Basiq, and it needs a server, so this version sticks to files that never leave your browser.</p></div></div>`;
 };
 V.rules=()=>`<h1>Settings</h1><p class="sub">Sync between your phones, bank rules, categories and backups.</p>
@@ -522,7 +628,7 @@ async function initGIS(){
       callback:r=>{if(r.error){setSync('err',r.error_description||r.error);return}if(google.accounts.oauth2.hasGrantedAllScopes&&!google.accounts.oauth2.hasGrantedAllScopes(r,SCOPE)){SY.on=false;saveSY();setSync('err','Google Drive access was not ticked. Tap sync and tick the Google Drive box.');toast('Tick the Google Drive box when Google asks, so Tally can save your budget.');return}tok=r.access_token;tokExp=Date.now()+((+r.expires_in||3600)-120)*1000;SY.on=true;saveSY();syncNow()},
       error_callback:e=>setSync(SY.on?'need':'',e&&e.type==='popup_closed'?'Sign-in was closed':'Sign-in failed, try again')});
     tcReady=true;
-  }catch(e){setSync('err',e.message)}
+  }catch(e){setSync(SY.on?'err':'',e.message)}
 }
 function signIn(){if(!cid()){go('rules');toast('Add your Google client ID first.');return}if(!tcReady){initGIS().then(()=>tcReady&&toast('Ready. Tap sync again to sign in.'));return}tc.requestAccessToken({prompt:SY.on?'':'consent'})}
 async function api(u,o={}){const r=await fetch(u,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});if(!r.ok){let j={};try{j=await r.json()}catch(x){}const er=j.error||{},why=((er.errors&&er.errors[0]&&er.errors[0].reason)||'')+' '+(er.status||'')+' '+JSON.stringify(er.details||'');const e=new Error('Google Drive said '+r.status+(er.message?': '+er.message:''));e.status=r.status;
@@ -583,7 +689,7 @@ const ACT={
   rc(el){S.recur[el.dataset.k]=el.dataset.s;if(el.dataset.s==='detected')delete S.recur[el.dataset.k];save();render()},
   rshow(el){U.rshow=el.dataset.v;render()},
   useavg(){const av=avg3(curMonth());S.cats.forEach(c=>{if(c.type==='expense'){c.budget=Math.ceil((av.by[c.id]||0)/10)*10;c.mt=Date.now()}});save();render();toast('Budgets set from your recent averages.')},
-  pcommit(){const p=U.pending;commitImport(buildRows(p).out,p.acct.trim()||'Account');U.pending=null;nextFile()},
+  pcommit(){const p=U.pending;if(p.kind==='pdf'){if(p.multi){for(const a of p.multi)commitImport(p.list.filter(t=>t.acct===a).map(({date,desc,amt})=>({date,desc,amt})),a)}else commitImport(p.list.map(({date,desc,amt})=>({date,desc,amt})),p.acct.trim()||'Account')}else commitImport(buildRows(p).out,p.acct.trim()||'Account');U.pending=null;nextFile()},
   pcancel(){U.pending=null;nextFile()},
   addrule(){const m=$('#rmatch').value.trim(),c=$('#rcat').value;if(!m||!c){toast('Enter some words and pick a category.');return}S.rules.unshift({id:uid(),match:m,cat:c});const n=applyRules();save();render();toast(`Rule added. ${n} transaction${n===1?'':'s'} recategorised.`)},
   delrule(el){S.rules=S.rules.filter(r=>r.id!==el.dataset.id);(S.del=S.del||[]).push(el.dataset.id);save();render()},
@@ -628,6 +734,15 @@ function handleFiles(fl){U.queue.push(...Array.from(fl||[]));if(!U.pending)nextF
 async function nextFile(){
   const f=U.queue.shift();
   if(!f){go('import');return}
+  if(/\.pdf$/i.test(f.name)||f.type==='application/pdf'){
+    toast(`Reading ${f.name}…`);
+    try{await loadPDFJS();const doc=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;const r=await readStatementPDF(doc);
+      if(!r.list.length){toast(`Couldn't find transactions in ${f.name}. If it's a scanned or image PDF, download a CSV from your bank instead.`);return nextFile()}
+      const accts=[...new Set(r.list.map(t=>t.acct))];
+      U.pending={kind:'pdf',name:f.name,list:r.list,checked:r.checked,acct:accts.length===1?(accts[0]||title(f.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ')).slice(0,32)):'',multi:accts.length>1?accts:null};$('#toast').classList.remove('on');go('import');
+    }catch(e){toast(e.message&&/PDF reader/.test(e.message)?e.message:`Couldn't read ${f.name}. Is it password protected?`);return nextFile()}
+    return;
+  }
   let text='';try{text=await f.text()}catch(e){toast(`Couldn't read ${f.name}.`);return nextFile()}
   if(/\.json$/i.test(f.name)||/^\s*\{/.test(text)){restoreFrom(text);return nextFile()}
   if(/<OFX>|OFXHEADER|<STMTTRN>/i.test(text)){const l=parseOFX(text);if(!l.length)toast(`No transactions found in ${f.name}.`);else commitImport(l,title(f.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ')).slice(0,32));return nextFile()}
