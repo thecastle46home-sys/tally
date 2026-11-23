@@ -1,5 +1,5 @@
 // Network first so updates show up straight away; cached copy lets Tally open offline.
-const CACHE='tally-v2',FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png'];
+const CACHE='tally-v3',FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{

@@ -519,13 +519,16 @@ async function initGIS(){
   if(!cid())return;
   try{await loadGIS();
     tc=google.accounts.oauth2.initTokenClient({client_id:cid(),scope:SCOPE,
-      callback:r=>{if(r.error){setSync('err',r.error_description||r.error);return}tok=r.access_token;tokExp=Date.now()+((+r.expires_in||3600)-120)*1000;SY.on=true;saveSY();syncNow()},
+      callback:r=>{if(r.error){setSync('err',r.error_description||r.error);return}if(google.accounts.oauth2.hasGrantedAllScopes&&!google.accounts.oauth2.hasGrantedAllScopes(r,SCOPE)){SY.on=false;saveSY();setSync('err','Google Drive access was not ticked. Tap sync and tick the Google Drive box.');toast('Tick the Google Drive box when Google asks, so Tally can save your budget.');return}tok=r.access_token;tokExp=Date.now()+((+r.expires_in||3600)-120)*1000;SY.on=true;saveSY();syncNow()},
       error_callback:e=>setSync(SY.on?'need':'',e&&e.type==='popup_closed'?'Sign-in was closed':'Sign-in failed, try again')});
     tcReady=true;
   }catch(e){setSync('err',e.message)}
 }
 function signIn(){if(!cid()){go('rules');toast('Add your Google client ID first.');return}if(!tcReady){initGIS().then(()=>tcReady&&toast('Ready. Tap sync again to sign in.'));return}tc.requestAccessToken({prompt:SY.on?'':'consent'})}
-async function api(u,o={}){const r=await fetch(u,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});if(!r.ok){const e=new Error('Google Drive said '+r.status);e.status=r.status;throw e}return r}
+async function api(u,o={}){const r=await fetch(u,{...o,headers:{...(o.headers||{}),Authorization:'Bearer '+tok}});if(!r.ok){let j={};try{j=await r.json()}catch(x){}const er=j.error||{},why=((er.errors&&er.errors[0]&&er.errors[0].reason)||'')+' '+(er.status||'')+' '+JSON.stringify(er.details||'');const e=new Error('Google Drive said '+r.status+(er.message?': '+er.message:''));e.status=r.status;
+  if(/accessNotConfigured|SERVICE_DISABLED|has not been used|is disabled/i.test(why+' '+(er.message||'')))e.hint='The Google Drive API is switched off for your Google Cloud project. In console.cloud.google.com pick the Tally project, open APIs & Services, Library, search Google Drive API and press Enable, wait a minute, then tap sync again.';
+  else if(/insufficientPermissions|SCOPE_INSUFFICIENT|insufficient/i.test(why+' '+(er.message||''))){e.hint='Tally wasn\'t given access to Google Drive. Tap sync, sign in again, and make sure the Google Drive box is ticked.';e.rescope=true}
+  throw e}return r}
 function schedSync(){if(!tokOK())return;clearTimeout(stT);stT=setTimeout(syncNow,2000)}
 async function syncNow(){
   if(!tokOK()){tok=null;if(SY.on)setSync('need');return}
@@ -548,7 +551,7 @@ async function syncNow(){
       id=r.id;m=r;
     }
     SY.fid=id;SY.rmt=m.modifiedTime;SY.force=false;SY.last=Date.now();saveSY();setSync('ok');
-  }catch(e){if(e.status===401||e.status===403&&!tokOK()){tok=null;setSync('need')}else setSync('err',e.message||'Sync failed')}
+  }catch(e){if(e.rescope){tok=null;SY.on=false;saveSY()}if(e.status===401){tok=null;setSync('need')}else{setSync('err',e.hint||e.message||'Sync failed');if(e.hint)toast(e.hint)}}
   finally{syncing=false;if(again){again=false;syncNow()}}
 }
 function setSync(st,msg){syncState=st;syncMsg=msg||'';pill();if(U.view==='rules'&&!document.activeElement?.matches('input,textarea'))render()}
